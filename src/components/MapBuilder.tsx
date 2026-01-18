@@ -213,6 +213,18 @@ export default function MapBuilder({ mapType = 'normal' }: MapBuilderProps) {
           window.dispatchEvent(new Event('nightlord-reset'))
         }
 
+        if (typeof window !== 'undefined') {
+          try {
+            const persistedPathTaken = {
+              seed_id: pendingLogSeed,
+              map_type: mapType,
+              path_taken: pathTaken,
+              created_at: Date.now(),
+            }
+            localStorage.setItem('seedfinder_last_path_taken', JSON.stringify(persistedPathTaken))
+          } catch {}
+        }
+
         router.push(`/result/${pendingLogSeed}`);
         
         const canMake = canMakeRequest();

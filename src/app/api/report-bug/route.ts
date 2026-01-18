@@ -75,7 +75,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!message || message.length < 1 || message.length > 1000) {
     return NextResponse.json({ error: "invalid_message" }, { status: 400 })
   }
-  if (email && (!isValidEmail(email) || email.length > 50)) {
+  if (!email || !isValidEmail(email) || email.length > 50) {
     return NextResponse.json({ error: "invalid_email" }, { status: 400 })
   }
   if (name.length > 50 || subject.length > 100 || userUrl.length > 2048) {
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const insertData = {
     name: name || null,
-    email: email || null,
+    email,
     subject: subject || null,
     message,
     user_url: userUrl || null,
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     is_suspected: isSuspected,
   } as Record<string, unknown>
 
-  const { data: _data, error } = await (supabase as { from: (t: string) => { insert: (d: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> } }).from("bug_reports").insert(insertData)
+  const { error } = await (supabase as { from: (t: string) => { insert: (d: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> } }).from("bug_reports").insert(insertData)
 
   if (error) {
     return NextResponse.json({ error: "storage_error" }, { status: 500 })

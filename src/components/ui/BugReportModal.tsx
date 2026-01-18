@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { usePathname } from "next/navigation"
 import { createPortal } from "react-dom"
 import DecoratedModal from "./DecoratedModal"
 
@@ -9,6 +10,27 @@ interface BugReportModalProps {
   onClose: () => void
   onSubmitted?: () => void
   borderHueRotate?: number
+}
+
+function deriveSuggestedSubject(pathname: string): string {
+  if (pathname === "/") {
+    return "Home Page"
+  }
+
+  const mapMatch = pathname.match(/^\/map\/([^/]+)$/)
+  if (mapMatch) {
+    const mapType = mapMatch[1]
+    const normalized = mapType.charAt(0).toUpperCase() + mapType.slice(1)
+    return `${normalized} map`
+  }
+
+  const seedMatch = pathname.match(/^\/result\/([^/]+)$/)
+  if (seedMatch) {
+    const seedId = seedMatch[1]
+    return `Seed ${seedId}`
+  }
+
+  return ""
 }
 
 function useValidation() {
@@ -25,7 +47,8 @@ function useValidation() {
       const subject = sanitize(values.subject, 100)
       const message = sanitize(values.message, 1000)
       const errors: Record<string, string> = {}
-      if (email && !emailRegex.test(email)) errors.email = "Invalid email"
+      if (!email) errors.email = "Email is required"
+      else if (!emailRegex.test(email)) errors.email = "Invalid email"
       if (!message) errors.message = "Message is required"
       return { name, email, subject, message, errors }
     },
@@ -36,10 +59,12 @@ function useValidation() {
 }
 
 export default function BugReportModal({ isOpen, onClose, onSubmitted, borderHueRotate = 0 }: BugReportModalProps) {
+  const pathname = usePathname()
   const { validate } = useValidation()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [subject, setSubject] = useState("")
+  const [autoSubject, setAutoSubject] = useState("")
   const [message, setMessage] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -91,9 +116,22 @@ export default function BugReportModal({ isOpen, onClose, onSubmitted, borderHue
       return
     }
 
+    const suggestedSubject = deriveSuggestedSubject(pathname)
+    if (suggestedSubject) {
+      if (!subject || subject === autoSubject) {
+        setSubject(suggestedSubject)
+        setAutoSubject(suggestedSubject)
+      }
+    } else {
+      if (subject === autoSubject) {
+        setSubject("")
+        setAutoSubject("")
+      }
+    }
+
     const id = window.setTimeout(() => setIsVisible(true), 0)
     return () => window.clearTimeout(id)
-  }, [isOpen])
+  }, [isOpen, pathname, subject, autoSubject])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -106,10 +144,64 @@ export default function BugReportModal({ isOpen, onClose, onSubmitted, borderHue
     setSubmitting(true)
     try {
       const userUrl = typeof window !== "undefined" ? window.location.href : undefined
+
+      const mergedMessage = (() => {
+        const baseMessage = v.message
+        if (typeof window === "undefined") return baseMessage
+
+        const match = pathname.match(/^\/result\/(\d+)/)
+        if (!match) return baseMessage
+
+        const seedIdFromPath = match[1]
+
+        try {
+          const raw = localStorage.getItem("seedfinder_last_path_taken")
+          if (!raw) return baseMessage
+
+          const parsed: unknown = JSON.parse(raw)
+          if (typeof parsed !== "object" || parsed === null) return baseMessage
+
+          const record = parsed as Record<string, unknown>
+          const storedSeedId = typeof record.seed_id === "string" ? record.seed_id : null
+          const storedMapType = typeof record.map_type === "string" ? record.map_type : null
+          const storedPathTaken = typeof record.path_taken === "object" && record.path_taken !== null && !Array.isArray(record.path_taken)
+            ? (record.path_taken as Record<string, unknown>)
+            : null
+
+          if (!storedSeedId || storedSeedId !== seedIdFromPath) return baseMessage
+
+          const safePathTaken: Record<string, string> = {}
+          if (storedPathTaken) {
+            for (const [key, value] of Object.entries(storedPathTaken)) {
+              if (typeof key === "string" && typeof value === "string") {
+                safePathTaken[key] = value
+              }
+            }
+          }
+
+          const suffixObject = {
+            seed_id: storedSeedId,
+            map_type: storedMapType,
+            path_taken: safePathTaken,
+          }
+
+          const suffix = `\n\n---\n${JSON.stringify(suffixObject)}`
+
+          if (baseMessage.length >= 1000) {
+            return baseMessage.slice(0, 1000)
+          }
+
+          const remaining = 1000 - baseMessage.length
+          return baseMessage + suffix.slice(0, remaining)
+        } catch {
+          return baseMessage
+        }
+      })()
+
       const res = await fetch("/api/report-bug", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: v.name, email: v.email, subject: v.subject, message: v.message, userUrl }),
+        body: JSON.stringify({ name: v.name, email: v.email, subject: v.subject, message: mergedMessage, userUrl }),
       })
 
       if (!res.ok) throw new Error("request_failed")
@@ -181,7 +273,7 @@ export default function BugReportModal({ isOpen, onClose, onSubmitted, borderHue
                   </div>
                   <div>
                     <label className="block text-sm text-gray-300 mb-1" htmlFor="br-email">
-                      Email (optional)
+                      Email
                     </label>
                     <input
                       id="br-email"
@@ -189,6 +281,7 @@ export default function BugReportModal({ isOpen, onClose, onSubmitted, borderHue
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       maxLength={50}
+                      required
                       className="w-full rounded-md bg-gray-900/50 border border-gray-600/50 text-white px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-500"
                     />
                     {errors.email ? <div className="text-red-400 text-xs mt-1">{errors.email}</div> : null}
@@ -203,7 +296,10 @@ export default function BugReportModal({ isOpen, onClose, onSubmitted, borderHue
                     id="br-subject"
                     type="text"
                     value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
+                    onChange={(e) => {
+                      setSubject(e.target.value)
+                      setAutoSubject("")
+                    }}
                     maxLength={100}
                     className="w-full rounded-md bg-gray-900/50 border border-gray-600/50 text-white px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-500"
                   />

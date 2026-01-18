@@ -42,7 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_performance_metrics_timestamp ON performance_metr
 CREATE TABLE IF NOT EXISTS bug_reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NULL,
-  email TEXT NULL,
+  email TEXT NOT NULL,
   subject TEXT NULL,
   message TEXT NOT NULL,
   user_url TEXT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS bug_reports (
 -- Constraints to mirror application-level limits
 ALTER TABLE bug_reports
   ADD CONSTRAINT chk_bug_reports_name_length CHECK (name IS NULL OR CHAR_LENGTH(name) <= 50),
-  ADD CONSTRAINT chk_bug_reports_email_length CHECK (email IS NULL OR CHAR_LENGTH(email) <= 50),
+  ADD CONSTRAINT chk_bug_reports_email_length CHECK (CHAR_LENGTH(email) <= 50),
   ADD CONSTRAINT chk_bug_reports_subject_length CHECK (subject IS NULL OR CHAR_LENGTH(subject) <= 100),
   ADD CONSTRAINT chk_bug_reports_message_length CHECK (CHAR_LENGTH(message) >= 1 AND CHAR_LENGTH(message) <= 1000),
   ADD CONSTRAINT chk_bug_reports_user_url_length CHECK (user_url IS NULL OR CHAR_LENGTH(user_url) <= 2048);
