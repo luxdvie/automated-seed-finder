@@ -13,7 +13,7 @@ type WindowWithGtag = Window & {
   __telemetryEvents?: TelemetryEvent[]
 }
 
-export type AnalyticsEventName = 'building_icon_added' | 'seed_pattern_found' | 'crystal_shattered' | 'map_selected' | 'map_selected_with_boss'
+export type AnalyticsEventName = 'building_icon_added' | 'seed_pattern_found' | 'crystal_shattered' | 'map_selected' | 'map_selected_with_boss' | 'ocr_nightlord_detected' | 'ocr_spawn_detected' | 'ocr_building_detected'
 
 if (typeof window !== 'undefined') {
   const windowWithGtag = window as WindowWithGtag

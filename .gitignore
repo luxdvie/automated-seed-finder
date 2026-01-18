@@ -98,8 +98,9 @@ temp/
 !public/**/*.webp
 !public/**/*.ico
 
-# Keep Readme files
+# Keep Readme and training files
 !README.md
+!**/training.md
 
 *.ignore
 tore --*

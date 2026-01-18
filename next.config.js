@@ -11,7 +11,7 @@ const contentSecurityPolicy = [
   "script-src-elem 'self' 'unsafe-inline' https:",
   "style-src 'self' 'unsafe-inline' https:",
   "img-src 'self' https: data: blob:",
-  "connect-src 'self' https: wss:",
+  "connect-src 'self' https: wss: ws://localhost:* http://localhost:*",
   "font-src 'self' https: data:",
   "frame-src 'self' https:",
   "object-src 'none'",

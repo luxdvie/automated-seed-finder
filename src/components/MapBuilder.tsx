@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import L from 'leaflet'
 import SlotSelectionModal from './SlotSelectionModal'
@@ -13,6 +13,8 @@ import { getInteractiveCoordinates } from '@/lib/constants/mapCoordinates'
 import { getViewportSizeFromWindow, isMobileLayout } from '@/lib/responsive'
 import { getSeedImageProvider } from '@/lib/map/seedImageProvider'
 import { buildingIcons } from '@/lib/constants/icons'
+import OCRCaptureControl from './OCRCaptureControl'
+import { DetectionResult } from '@/hooks/useOCRCapture'
 
 interface MapBuilderProps {
   mapType?: 'normal' | 'crater' | 'mountaintop' | 'noklateo' | 'rotted' | 'greatHollow'
@@ -45,6 +47,7 @@ export default function MapBuilder({ mapType = 'normal' }: MapBuilderProps) {
   const [isMapInitialized, setIsMapInitialized] = useState(false)
   const [remainingSeedsCount, setRemainingSeedsCount] = useState<number>(0)
   const [pendingLogSeed, setPendingLogSeed] = useState<string | null>(null)
+  const [showOCRControls, setShowOCRControls] = useState(false)
   const router = useRouter()
   
   const { canMakeRequest, recordRequest, getRemainingTime } = useRateLimit(30000)
@@ -488,6 +491,44 @@ export default function MapBuilder({ mapType = 'normal' }: MapBuilderProps) {
       }
     }, 0)
   }
+
+  // OCR Detection Handlers
+  const handleOCRDetection = useCallback((result: DetectionResult) => {
+    // Log detection for debugging
+    console.log('OCR Detection:', result)
+  }, [])
+
+  const handleOCRNightlordDetected = useCallback((nightlordId: string) => {
+    if (nightlordId && nightlordId !== 'empty') {
+      setSelectedNightlord(nightlordId)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('preSelectedNightlord', nightlordId)
+      }
+      setPathTaken(prev => ({ ...prev, nightlord: nightlordId }))
+      trackAnalyticsEvent('ocr_nightlord_detected', { nightlord: nightlordId })
+    }
+  }, [])
+
+  const handleOCRSpawnDetected = useCallback((slotId: string) => {
+    if (slotId && spawnAnalysis.possibleSpawnSlots.includes(slotId)) {
+      toggleSpawnSlot(slotId)
+      trackAnalyticsEvent('ocr_spawn_detected', { slot_id: slotId })
+    }
+  }, [spawnAnalysis.possibleSpawnSlots, toggleSpawnSlot])
+
+  const handleOCRBuildingDetected = useCallback((slotId: string, buildingType: string) => {
+    if (slotId && buildingType) {
+      setSelectedBuildings(prev => ({
+        ...prev,
+        [slotId]: buildingType
+      }))
+      setPathTaken(prev => ({
+        ...prev,
+        [slotId]: buildingType
+      }))
+      trackAnalyticsEvent('ocr_building_detected', { slot_id: slotId, building: buildingType })
+    }
+  }, [])
 
   const getIconPath = (building: string, isNightlordSlot: boolean = false) => {
     if (!building || building === 'empty' || building === '') {
@@ -1158,13 +1199,35 @@ export default function MapBuilder({ mapType = 'normal' }: MapBuilderProps) {
           }}
         />
         
-        {}
-        <div 
+        {/* Remaining seeds counter */}
+        <div
           className="absolute top-8 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm font-medium pointer-events-none z-[1000] mapbuilder-remaining-seeds"
           style={{ fontSize: isMobile ? '12px' : '14px' }}
         >
           {remainingSeedsCount} seeds remaining
         </div>
+
+        {/* OCR Toggle Button */}
+        <button
+          onClick={() => setShowOCRControls(!showOCRControls)}
+          className="absolute top-8 left-2 bg-black bg-opacity-70 hover:bg-opacity-90 text-white px-2 py-1 rounded text-sm font-medium z-[1000] flex items-center gap-1"
+          style={{ fontSize: isMobile ? '12px' : '14px' }}
+          title="Toggle OCR Capture Controls"
+        >
+          <span className={`w-2 h-2 rounded-full ${showOCRControls ? 'bg-green-500' : 'bg-gray-500'}`} />
+          OCR
+        </button>
+
+        {/* OCR Capture Controls */}
+        {showOCRControls && (
+          <OCRCaptureControl
+            className="absolute top-16 left-2 z-[1000] w-64"
+            onDetection={handleOCRDetection}
+            onNightlordDetected={handleOCRNightlordDetected}
+            onSpawnDetected={handleOCRSpawnDetected}
+            onBuildingDetected={handleOCRBuildingDetected}
+          />
+        )}
       </div>
       
       <SlotSelectionModal
