@@ -36,11 +36,11 @@ export async function generateMetadata({ params }: ResultPageProps): Promise<Met
   const canonicalSeedId = normalizeSeedId(seedId)
 
   if (!canonicalSeedId) {
-    return { title: 'Pattern | Nightreign Seed Finder' }
+    return { title: 'Pattern' }
   }
 
   return {
-    title: `Pattern ${canonicalSeedId} | Nightreign Seed Finder`,
+    title: `Pattern ${canonicalSeedId}`,
   }
 }
 
