@@ -182,6 +182,58 @@ class SpawnDetector:
             logger.error(f"Error detecting spawn marker: {e}")
             return None
 
+    def _check_player_color(self, map_region: np.ndarray, cx: int, cy: int, radius: int) -> Tuple[bool, str]:
+        """Check if the region has player badge colors (red, green, or blue).
+
+        Returns:
+            Tuple of (is_player_color, detected_color)
+        """
+        height, width = map_region.shape[:2]
+
+        # Extract region around the circle
+        x1 = max(0, cx - radius)
+        y1 = max(0, cy - radius)
+        x2 = min(width, cx + radius)
+        y2 = min(height, cy + radius)
+
+        region = map_region[y1:y2, x1:x2]
+        if region.size == 0:
+            return False, "none"
+
+        # Convert to HSV
+        hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
+
+        # Check for player colors (red, green, blue) with decent saturation
+        # Red (wraps around in HSV)
+        red_mask1 = cv2.inRange(hsv, np.array([0, 80, 80]), np.array([15, 255, 255]))
+        red_mask2 = cv2.inRange(hsv, np.array([165, 80, 80]), np.array([180, 255, 255]))
+        red_count = np.sum(red_mask1 > 0) + np.sum(red_mask2 > 0)
+
+        # Green
+        green_mask = cv2.inRange(hsv, np.array([35, 80, 80]), np.array([85, 255, 255]))
+        green_count = np.sum(green_mask > 0)
+
+        # Blue
+        blue_mask = cv2.inRange(hsv, np.array([90, 80, 80]), np.array([130, 255, 255]))
+        blue_count = np.sum(blue_mask > 0)
+
+        total_pixels = region.shape[0] * region.shape[1]
+        min_color_ratio = 0.15  # At least 15% of pixels should be colored
+
+        # Find dominant color
+        max_count = max(red_count, green_count, blue_count)
+        color_ratio = max_count / total_pixels
+
+        if color_ratio < min_color_ratio:
+            return False, "gray"  # Not enough color - likely a castle/stone icon
+
+        if max_count == red_count:
+            return True, "red"
+        elif max_count == green_count:
+            return True, "green"
+        else:
+            return True, "blue"
+
     def _detect_with_hough_circles(self, map_region: np.ndarray) -> Optional[Dict]:
         """Detect spawn using Hough Circle detection for double-ring pattern."""
         height, width = map_region.shape[:2]
@@ -220,6 +272,11 @@ class SpawnDetector:
             if not (self.min_y_ratio <= y_ratio <= self.max_y_ratio):
                 continue
 
+            # Check for player badge colors (reject gray/stone castle icons)
+            is_colored, color = self._check_player_color(map_region, cx, cy, radius)
+            if not is_colored:
+                continue  # Skip gray/stone colored circles (likely castles)
+
             # Look for an inner circle near this outer circle
             inner_region = blurred[max(0, cy-radius):min(height, cy+radius),
                                    max(0, cx-radius):min(width, cx+radius)]
@@ -248,7 +305,8 @@ class SpawnDetector:
                 "position": {"x": int(cx), "y": int(cy)},
                 "confidence": confidence,
                 "radius": int(radius),
-                "has_inner_circle": has_inner
+                "has_inner_circle": has_inner,
+                "color": color
             })
 
         if not candidates:

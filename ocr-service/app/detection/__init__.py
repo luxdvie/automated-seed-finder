@@ -4,6 +4,7 @@ from .boss_detector import BossDetector
 from .spawn_detector import SpawnDetector
 from .poi_detector import POIDetector
 from .coordinate_mapper import CoordinateMapper
+from .shifting_earth_detector import ShiftingEarthDetector
 
 __all__ = [
     "TemplateMatcher",
@@ -11,4 +12,5 @@ __all__ = [
     "SpawnDetector",
     "POIDetector",
     "CoordinateMapper",
+    "ShiftingEarthDetector",
 ]

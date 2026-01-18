@@ -15,7 +15,7 @@ import numpy as np
 
 from .config import settings, NIGHTLORD_MAPPING, NIGHTLORD_COORDINATE
 from .capture import VideoCapture, FrameProcessor, screen_capture
-from .detection import BossDetector, SpawnDetector, POIDetector, CoordinateMapper
+from .detection import BossDetector, SpawnDetector, POIDetector, CoordinateMapper, ShiftingEarthDetector
 from .websocket import ConnectionManager
 
 # Configure logging
@@ -31,6 +31,7 @@ frame_processor = FrameProcessor()
 boss_detector: Optional[BossDetector] = None
 spawn_detector = SpawnDetector()
 poi_detector: Optional[POIDetector] = None
+shifting_earth_detector: Optional[ShiftingEarthDetector] = None
 coordinate_mapper = CoordinateMapper()
 connection_manager = ConnectionManager()
 
@@ -38,17 +39,19 @@ connection_manager = ConnectionManager()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler."""
-    global boss_detector, poi_detector
+    global boss_detector, poi_detector, shifting_earth_detector
 
     # Initialize detectors and load templates
     templates_dir = Path(__file__).parent.parent / "templates"
 
     boss_detector = BossDetector(str(templates_dir))
     poi_detector = POIDetector(str(templates_dir))
+    shifting_earth_detector = ShiftingEarthDetector(str(templates_dir))
 
     # Try to load templates (will log warnings if not found)
     boss_detector.load_templates()
     poi_detector.load_templates()
+    shifting_earth_detector.load_templates()
 
     logger.info("OCR service started")
 
@@ -203,6 +206,21 @@ async def capture_monitor(monitor_index: int, debug: bool = False):
                 cv2.putText(debug_image, f"Slot {spawn_slot} ({spawn_conf:.0%})",
                             (sp_x - 50, sp_y - 30),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+
+            # Add CYAN text for Shifting Earth in top-right corner
+            shifting_earth = result.get("shifting_earth")
+            se_conf = result.get("shifting_earth_confidence", 0)
+            if shifting_earth:
+                se_label = f"Shifting Earth: {shifting_earth} ({se_conf:.0%})"
+            else:
+                se_label = "No Shifting Earth"
+            # Position in top-right, with some padding
+            text_size = cv2.getTextSize(se_label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
+            text_x = width - text_size[0] - 20
+            text_y = 40
+            cv2.putText(debug_image, se_label,
+                        (text_x, text_y),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)  # Cyan
 
             # Save with timestamp
             debug_dir = Path(__file__).parent.parent / "debug_captures"
@@ -384,6 +402,103 @@ async def extract_nightlord_template(monitor_index: int, name: str):
         "extraction_region": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
         "map_size": {"width": width, "height": height},
         "hint": "Restart the service to reload templates, then test with /all-scores/{monitor}"
+    }
+
+
+@app.get("/extract-shifting-earth/{monitor_index}")
+async def extract_shifting_earth_template(monitor_index: int, name: str):
+    """Extract Shifting Earth template from current screen.
+
+    The shifting earth event should be visible on the map.
+
+    Args:
+        monitor_index: Monitor to capture
+        name: Event name (MountainTop, Crater, Noklateo, RottedWoods, GreatHollow)
+    """
+    from .detection.shifting_earth_detector import SHIFTING_EARTH_REGIONS
+
+    valid_names = list(SHIFTING_EARTH_REGIONS.keys())
+    if name not in valid_names:
+        return {"error": f"Unknown shifting earth: {name}", "valid_names": valid_names}
+
+    frame = screen_capture.capture_monitor(monitor_index)
+    if frame is None:
+        raise HTTPException(status_code=500, detail=f"Failed to capture monitor {monitor_index}")
+
+    map_region = frame_processor.extract_map_region(frame)
+    if map_region is None:
+        return {"error": "Failed to extract map region"}
+
+    height, width = map_region.shape[:2]
+
+    # Get the region for this event type
+    region_info = SHIFTING_EARTH_REGIONS[name]
+    x1 = int(region_info["x_start"] * width)
+    x2 = int(region_info["x_end"] * width)
+    y1 = int(region_info["y_start"] * height)
+    y2 = int(region_info["y_end"] * height)
+
+    # Extract the region as template
+    template = map_region[y1:y2, x1:x2]
+
+    if template.size == 0:
+        return {"error": "Empty template region"}
+
+    # Save template
+    from pathlib import Path
+    templates_dir = Path(__file__).parent.parent / "templates" / "shifting_earth"
+    templates_dir.mkdir(parents=True, exist_ok=True)
+
+    output_path = templates_dir / f"{name}.png"
+    cv2.imwrite(str(output_path), template)
+
+    # Save debug images
+    cv2.imwrite("debug_map_region.jpg", map_region)
+
+    # Draw rectangle showing extraction region
+    debug_region = map_region.copy()
+    cv2.rectangle(debug_region, (x1, y1), (x2, y2), (0, 255, 0), 3)
+    cv2.putText(debug_region, name, (x1 + 10, y1 + 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.imwrite("debug_extraction_region.jpg", debug_region)
+
+    return {
+        "message": f"Extracted template for {name}",
+        "saved_to": str(output_path),
+        "template_size": {"width": x2 - x1, "height": y2 - y1},
+        "extraction_region": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
+        "map_size": {"width": width, "height": height},
+        "hint": "Restart the service to reload templates, then test with /debug-shifting-earth/{monitor}"
+    }
+
+
+@app.get("/debug-shifting-earth/{monitor_index}")
+async def debug_shifting_earth(monitor_index: int):
+    """Debug Shifting Earth detection - shows all scores."""
+    frame = screen_capture.capture_monitor(monitor_index)
+
+    if frame is None:
+        raise HTTPException(status_code=500, detail=f"Failed to capture monitor {monitor_index}")
+
+    map_region = frame_processor.extract_map_region(frame)
+    if map_region is None:
+        return {"error": "Failed to extract map region"}
+
+    cv2.imwrite("debug_map_region.jpg", map_region)
+
+    # Get all detection scores
+    all_scores = []
+    if shifting_earth_detector and shifting_earth_detector.templates_loaded:
+        all_scores = shifting_earth_detector.detect_all(map_region)
+
+    # Get the best detection
+    best = shifting_earth_detector.detect(map_region) if shifting_earth_detector else None
+
+    return {
+        "detected": best,
+        "all_scores": all_scores,
+        "templates_loaded": shifting_earth_detector.templates_loaded if shifting_earth_detector else False,
+        "hint": "If no templates loaded, use /extract-shifting-earth/{monitor}?name=... to create them"
     }
 
 
@@ -688,6 +803,18 @@ async def process_frame(frame: np.ndarray) -> dict:
             poi_detections, region_width, region_height
         )
 
+    # Detect Shifting Earth event
+    shifting_earth_result = None
+    if shifting_earth_detector is not None and shifting_earth_detector.templates_loaded:
+        se_detection = shifting_earth_detector.detect(map_region)
+        if se_detection:
+            shifting_earth_result = {
+                "event": se_detection["event"],
+                "event_name": se_detection["event_name"],
+                "confidence": se_detection["confidence"]
+            }
+            logger.info(f"Shifting Earth detected: {se_detection['event_name']} ({se_detection['confidence']:.0%})")
+
     return {
         "timestamp": time.time(),
         "nightlord": nightlord_result["nightlord"] if nightlord_result else None,
@@ -696,6 +823,8 @@ async def process_frame(frame: np.ndarray) -> dict:
         "spawn_slot": spawn_result["slot_id"] if spawn_result else None,
         "spawn_confidence": spawn_result["confidence"] if spawn_result else 0,
         "spawn_debug": spawn_debug,
+        "shifting_earth": shifting_earth_result["event"] if shifting_earth_result else None,
+        "shifting_earth_confidence": shifting_earth_result["confidence"] if shifting_earth_result else 0,
         "buildings": [
             {
                 "slot_id": b["slot_id"],
