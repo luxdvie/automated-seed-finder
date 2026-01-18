@@ -1,5 +1,4 @@
 import './globals.css'
-import { Suspense } from 'react'
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import { Header } from '@/components/ui/Header'
@@ -7,7 +6,6 @@ import { Footer } from '@/components/ui/Footer'
 import { GlobalBackground } from '@/components/backgrounds/GlobalBackground'
 import { GlobalUpdateProvider } from '@/components/providers/GlobalUpdateProvider'
 import { PwaServiceWorkerRegister } from '@/components/PwaServiceWorkerRegister'
-import { GaPageViewTracker } from '@/components/analytics/GaPageViewTracker'
 import { pagesIcoUrl, pagesJpgUrl } from '@/lib/pagesAssets'
 
 export const viewport: Viewport = {
@@ -70,7 +68,7 @@ export default function RootLayout({
               strategy="afterInteractive"
             />
             <Script id="ga4-init" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){window.dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '${gaMeasurementId}', { send_page_view: false });`}
+              {`window.dataLayer=window.dataLayer||[];function gtag(){window.dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '${gaMeasurementId}');`}
             </Script>
           </>
         ) : null}
@@ -78,9 +76,6 @@ export default function RootLayout({
       <body className="antialiased overflow-x-hidden">
         <GlobalUpdateProvider>
           <PwaServiceWorkerRegister />
-          <Suspense fallback={null}>
-            <GaPageViewTracker />
-          </Suspense>
           <GlobalBackground />
           <Header />
           <main className="min-h-screen relative">
