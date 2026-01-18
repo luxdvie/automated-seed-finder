@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import L from 'leaflet'
 import SlotSelectionModal from './SlotSelectionModal'
 import { getRemainingSeeds, getAvailableBuildingsForSlot, getAvailableNightlords, getAvailableNightlordsForGhost, getAllSeeds } from '@/lib/data/seedSearch'
@@ -48,7 +48,9 @@ export default function MapBuilder({ mapType = 'normal' }: MapBuilderProps) {
   const [remainingSeedsCount, setRemainingSeedsCount] = useState<number>(0)
   const [pendingLogSeed, setPendingLogSeed] = useState<string | null>(null)
   const [showOCRControls, setShowOCRControls] = useState(false)
+  const [autoSelectApplied, setAutoSelectApplied] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
   
   const { canMakeRequest, recordRequest, getRemainingTime } = useRateLimit(30000)
 
@@ -57,6 +59,70 @@ export default function MapBuilder({ mapType = 'normal' }: MapBuilderProps) {
     slots: selectedBuildings,
     nightlord: (!selectedNightlord || selectedNightlord === 'empty' || selectedNightlord === '') ? null : selectedNightlord
   })
+
+  // Auto-select from query params (OCR capture flow)
+  useEffect(() => {
+    if (autoSelectApplied) return
+
+    const nightlordParam = searchParams.get('nightlord')
+    const hasSpawnParams = searchParams.has('spawn_x') || searchParams.has('spawn')
+
+    if (nightlordParam || hasSpawnParams) {
+      // Auto-select nightlord
+      if (nightlordParam && nightlordParam !== 'empty') {
+        setSelectedNightlord(nightlordParam)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('preSelectedNightlord', nightlordParam)
+        }
+        setPathTaken(prev => ({ ...prev, nightlord: nightlordParam }))
+        console.log('OCR auto-selected nightlord:', nightlordParam)
+      }
+
+      // Mark as applied so we don't re-run
+      setAutoSelectApplied(true)
+    }
+  }, [searchParams, autoSelectApplied])
+
+  // Auto-select spawn after spawnAnalysis is available
+  useEffect(() => {
+    if (!autoSelectApplied) return
+    if (spawnAnalysis.possibleSpawnSlots.length === 0) return
+
+    const spawnX = searchParams.get('spawn_x')
+    const spawnY = searchParams.get('spawn_y')
+    const spawnType = searchParams.get('spawn_type') || 'empty_spawn'
+
+    // If we have coordinates, find the nearest VALID spawn slot
+    if (spawnX && spawnY) {
+      const x = parseInt(spawnX, 10)
+      const y = parseInt(spawnY, 10)
+
+      // Get coordinates for all possible spawn slots
+      const slotCoords = getInteractiveCoordinates(mapType)
+      let nearestSlot: string | null = null
+      let nearestDistance = Infinity
+
+      for (const slotId of spawnAnalysis.possibleSpawnSlots) {
+        const coord = slotCoords.find(c => c.id === slotId)
+        if (coord) {
+          const distance = Math.sqrt(Math.pow(coord.x - x, 2) + Math.pow(coord.y - y, 2))
+          if (distance < nearestDistance) {
+            nearestDistance = distance
+            nearestSlot = slotId
+          }
+        }
+      }
+
+      if (nearestSlot && selectedSpawnSlot !== nearestSlot) {
+        console.log(`OCR spawn coords (${x}, ${y}) -> nearest valid slot: ${nearestSlot} (distance: ${nearestDistance.toFixed(1)})`)
+        toggleSpawnSlot(nearestSlot)
+
+        // Also set the building type (empty_spawn or church_spawn)
+        setSelectedBuildings(prev => ({ ...prev, [nearestSlot]: spawnType }))
+        setPathTaken(prev => ({ ...prev, [nearestSlot]: spawnType }))
+      }
+    }
+  }, [autoSelectApplied, searchParams, spawnAnalysis.possibleSpawnSlots, selectedSpawnSlot, toggleSpawnSlot, mapType])
 
   useEffect(() => {
     if (!mapRef.current) return
