@@ -7,6 +7,7 @@ type GtagFunction = (command: 'event' | 'config' | 'js', target: string | Date, 
 
 type WindowWithGtag = Window & {
   gtag?: GtagFunction
+  __gaTrackedPathnames?: Record<string, number>
 }
 
 function getMeasurementId(): string | null {
@@ -49,6 +50,13 @@ export function GaPageViewTracker() {
     lastTrackedPathnameRef.current = pathname
 
     const windowWithGtag = window as WindowWithGtag
+
+    if (!windowWithGtag.__gaTrackedPathnames) {
+      windowWithGtag.__gaTrackedPathnames = {}
+    }
+
+    if (windowWithGtag.__gaTrackedPathnames[pathname]) return
+    windowWithGtag.__gaTrackedPathnames[pathname] = Date.now()
 
     const pagePath = buildPagePathFromWindow(pathname)
     const pageLocation = buildPageLocation()
