@@ -22,12 +22,14 @@ class FrameProcessor:
         """Extract the map overlay region from a frame.
 
         The map typically appears on the right side of the screen when opened.
+        The in-game map is square, so we extract a square region to match
+        the 1000x1000 coordinate system.
 
         Args:
             frame: Full captured frame.
 
         Returns:
-            Cropped map region, or None if extraction failed.
+            Cropped map region (square), or None if extraction failed.
         """
         if frame is None:
             return None
@@ -35,17 +37,38 @@ class FrameProcessor:
         try:
             height, width = frame.shape[:2]
 
-            # Calculate crop coordinates based on settings
-            x_start = int(width * settings.map_region_x_start)
-            x_end = int(width * settings.map_region_x_end)
+            # Calculate initial crop coordinates based on settings
             y_start = int(height * settings.map_region_y_start)
             y_end = int(height * settings.map_region_y_end)
+            region_height = y_end - y_start
 
-            # Crop the map region
+            # Make the region square using height as the reference
+            # The map is on the right side of the screen
+            x_end = int(width * settings.map_region_x_end)
+            x_start = x_end - region_height  # Square: width = height
+
+            # Ensure x_start doesn't go negative
+            if x_start < 0:
+                x_start = 0
+                # Adjust y to maintain square aspect if needed
+                region_height = x_end - x_start
+                y_center = (y_start + y_end) // 2
+                y_start = y_center - region_height // 2
+                y_end = y_start + region_height
+
+            # Crop the map region (now square)
             map_region = frame[y_start:y_end, x_start:x_end]
+
+            # Trim left padding - the in-game map is right-aligned within the region
+            # Only trim left side; coordinate conversion handles non-square regions
+            left_trim = settings.map_region_left_trim
+            if left_trim > 0 and left_trim < map_region.shape[1]:
+                map_region = map_region[:, left_trim:]
 
             self.last_frame = frame
             self.last_map_region = map_region
+
+            logger.debug(f"Extracted square map region: {map_region.shape[1]}x{map_region.shape[0]}")
 
             return map_region
 

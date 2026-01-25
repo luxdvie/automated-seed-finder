@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 // Map shifting earth detection results to URL paths
@@ -27,7 +27,7 @@ interface DetectionResult {
   shifting_earth_confidence: number
 }
 
-export default function CapturePage() {
+function CapturePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'capturing' | 'processing' | 'redirecting' | 'error'>('capturing')
@@ -55,6 +55,8 @@ export default function CapturePage() {
         }
 
         const data: DetectionResult = await response.json()
+        console.log('OCR response:', data)
+        console.log('spawn_slot value:', data.spawn_slot, 'type:', typeof data.spawn_slot)
         setResult(data)
         setStatus('processing')
 
@@ -76,6 +78,13 @@ export default function CapturePage() {
           params.set('spawn_x', String(data.spawn_debug.system.x))
           params.set('spawn_y', String(data.spawn_debug.system.y))
         }
+
+        // Pass OCR-detected spawn slot for debugging
+        console.log('Setting ocr_slot:', data.spawn_slot)
+        if (data.spawn_slot) {
+          params.set('ocr_slot', data.spawn_slot)
+        }
+        console.log('Final params:', params.toString())
 
         // Pass spawn type (from Stream Deck button: church or empty)
         params.set('spawn_type', isChurchSpawn ? 'church_spawn' : 'empty_spawn')
@@ -146,5 +155,19 @@ export default function CapturePage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function CapturePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="text-center p-8">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        </div>
+      </div>
+    }>
+      <CapturePageContent />
+    </Suspense>
   )
 }

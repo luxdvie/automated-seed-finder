@@ -120,9 +120,23 @@ export default function MapBuilder({ mapType = 'normal' }: MapBuilderProps) {
         // Also set the building type (empty_spawn or church_spawn)
         setSelectedBuildings(prev => ({ ...prev, [nearestSlot]: spawnType }))
         setPathTaken(prev => ({ ...prev, [nearestSlot]: spawnType }))
+
+        // Check for seed match after state updates (mirrors handleSpawnToggle logic)
+        setTimeout(() => {
+          const currentNightlord = selectedNightlord || null
+          const cleanedNightlord = (!currentNightlord || currentNightlord === 'empty') ? null : currentNightlord
+          const slotsWithSpawn = { [nearestSlot]: spawnType }
+          const remainingSeeds = getRemainingSeeds(mapType, slotsWithSpawn, cleanedNightlord, nearestSlot)
+
+          if (remainingSeeds.length === 1) {
+            console.log('OCR auto-found seed:', remainingSeeds[0].seed_id)
+            trackAnalyticsEvent('seed_pattern_found', { map_type: mapType, seed_id: remainingSeeds[0].seed_id })
+            setPendingLogSeed(remainingSeeds[0].seed_id)
+          }
+        }, 100)
       }
     }
-  }, [autoSelectApplied, searchParams, spawnAnalysis.possibleSpawnSlots, selectedSpawnSlot, toggleSpawnSlot, mapType])
+  }, [autoSelectApplied, searchParams, spawnAnalysis.possibleSpawnSlots, selectedSpawnSlot, toggleSpawnSlot, mapType, selectedNightlord])
 
   useEffect(() => {
     if (!mapRef.current) return

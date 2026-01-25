@@ -174,6 +174,8 @@ async def capture_monitor(monitor_index: int, debug: bool = False):
             height, width = map_region.shape[:2]
 
             # Draw GREEN box on nightlord position
+            # Note: NIGHTLORD_COORDINATE was calibrated directly for the OCR extraction,
+            # so it doesn't need the coordinate_offset applied
             nl_x = NIGHTLORD_COORDINATE["x"]
             nl_y = NIGHTLORD_COORDINATE["y"]
             scale_x = width / 1000

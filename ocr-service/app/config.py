@@ -22,10 +22,18 @@ class Settings(BaseSettings):
     map_region_x_end: float = 1.0     # End at 100% of screen width
     map_region_y_start: float = 0.05  # Start from 5% of screen height
     map_region_y_end: float = 0.95    # End at 95% of screen height
+    # Trim extra padding from left side of extracted map region (pixels)
+    # The in-game map is right-aligned, leaving ~103px padding on left
+    map_region_left_trim: int = 103
 
     # Coordinate system (matches Next.js app)
     coordinate_system_size: int = 1000
     slot_match_distance_threshold: int = 100
+    # Offset to align OCR coordinates with frontend coordinate system
+    # NOTE: Offset disabled - was causing issues for slots in different map areas
+    # The misalignment may be non-uniform (scaling issue, not translation)
+    coordinate_offset_x: int = 0
+    coordinate_offset_y: int = 0
 
     # WebSocket settings
     ws_host: str = "0.0.0.0"
@@ -95,5 +103,5 @@ BUILDING_SLOT_COORDINATES = [
 
 # Special coordinates (in 1000x1000 coordinate system)
 # Nightlord icon appears in bottom-left of map overlay
-NIGHTLORD_COORDINATE = {"id": "nightlord", "x": 293, "y": 800}
+NIGHTLORD_COORDINATE = {"id": "nightlord", "x": 163, "y": 800}
 EVENT_COORDINATE = {"id": "event", "x": 102, "y": 740}

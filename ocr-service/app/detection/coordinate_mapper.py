@@ -18,6 +18,9 @@ class CoordinateMapper:
         self.nightlord_coordinate = NIGHTLORD_COORDINATE
         self.system_size = settings.coordinate_system_size
         self.distance_threshold = settings.slot_match_distance_threshold
+        # Offset to align OCR region with frontend coordinate system
+        self.offset_x = settings.coordinate_offset_x
+        self.offset_y = settings.coordinate_offset_y
 
     def pixel_to_system(
         self,
@@ -40,8 +43,9 @@ class CoordinateMapper:
         scale_x = self.system_size / region_width
         scale_y = self.system_size / region_height
 
-        system_x = int(pixel_x * scale_x)
-        system_y = int(pixel_y * scale_y)
+        # Apply offset to align with frontend coordinate system
+        system_x = int(pixel_x * scale_x) - self.offset_x
+        system_y = int(pixel_y * scale_y) - self.offset_y
 
         return system_x, system_y
 
