@@ -9,8 +9,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import cv2
+import json
 import numpy as np
 
 from .config import settings, NIGHTLORD_MAPPING, NIGHTLORD_COORDINATE
@@ -79,6 +81,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Calibration config path
+CALIBRATION_FILE = Path(__file__).parent.parent / "calibration.json"
+
+
+def load_calibration_config() -> dict:
+    """Load calibration config from file."""
+    if CALIBRATION_FILE.exists():
+        with open(CALIBRATION_FILE, 'r') as f:
+            return json.load(f)
+    return {"regions": {}}
+
+
+def save_calibration_config(config: dict):
+    """Save calibration config to file."""
+    config["calibrated_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    with open(CALIBRATION_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
 
 
 @app.get("/")
@@ -407,73 +427,6 @@ async def extract_nightlord_template(monitor_index: int, name: str):
     }
 
 
-@app.get("/extract-shifting-earth/{monitor_index}")
-async def extract_shifting_earth_template(monitor_index: int, name: str):
-    """Extract Shifting Earth template from current screen.
-
-    The shifting earth event should be visible on the map.
-
-    Args:
-        monitor_index: Monitor to capture
-        name: Event name (MountainTop, Crater, Noklateo, RottedWoods, GreatHollow)
-    """
-    from .detection.shifting_earth_detector import SHIFTING_EARTH_REGIONS
-
-    valid_names = list(SHIFTING_EARTH_REGIONS.keys())
-    if name not in valid_names:
-        return {"error": f"Unknown shifting earth: {name}", "valid_names": valid_names}
-
-    frame = screen_capture.capture_monitor(monitor_index)
-    if frame is None:
-        raise HTTPException(status_code=500, detail=f"Failed to capture monitor {monitor_index}")
-
-    map_region = frame_processor.extract_map_region(frame)
-    if map_region is None:
-        return {"error": "Failed to extract map region"}
-
-    height, width = map_region.shape[:2]
-
-    # Get the region for this event type
-    region_info = SHIFTING_EARTH_REGIONS[name]
-    x1 = int(region_info["x_start"] * width)
-    x2 = int(region_info["x_end"] * width)
-    y1 = int(region_info["y_start"] * height)
-    y2 = int(region_info["y_end"] * height)
-
-    # Extract the region as template
-    template = map_region[y1:y2, x1:x2]
-
-    if template.size == 0:
-        return {"error": "Empty template region"}
-
-    # Save template
-    from pathlib import Path
-    templates_dir = Path(__file__).parent.parent / "templates" / "shifting_earth"
-    templates_dir.mkdir(parents=True, exist_ok=True)
-
-    output_path = templates_dir / f"{name}.png"
-    cv2.imwrite(str(output_path), template)
-
-    # Save debug images
-    cv2.imwrite("debug_map_region.jpg", map_region)
-
-    # Draw rectangle showing extraction region
-    debug_region = map_region.copy()
-    cv2.rectangle(debug_region, (x1, y1), (x2, y2), (0, 255, 0), 3)
-    cv2.putText(debug_region, name, (x1 + 10, y1 + 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.imwrite("debug_extraction_region.jpg", debug_region)
-
-    return {
-        "message": f"Extracted template for {name}",
-        "saved_to": str(output_path),
-        "template_size": {"width": x2 - x1, "height": y2 - y1},
-        "extraction_region": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
-        "map_size": {"width": width, "height": height},
-        "hint": "Restart the service to reload templates, then test with /debug-shifting-earth/{monitor}"
-    }
-
-
 @app.get("/debug-shifting-earth/{monitor_index}")
 async def debug_shifting_earth(monitor_index: int):
     """Debug Shifting Earth detection - shows all scores."""
@@ -509,6 +462,7 @@ async def all_template_scores(monitor_index: int):
     """Get all nightlord template match scores for current screen.
 
     Returns sorted list of all template matches to help debug which is being detected.
+    Uses calibrated boss region if available.
     """
     frame = screen_capture.capture_monitor(monitor_index)
 
@@ -519,13 +473,31 @@ async def all_template_scores(monitor_index: int):
     if map_region is None:
         return {"error": "Failed to extract map region"}
 
+    region_height, region_width = map_region.shape[:2]
+
+    # Use calibrated boss region if available
+    calibration = load_calibration_config()
+    cal_regions = calibration.get("regions", {})
+    using_calibration = False
+
+    search_region = map_region
+    if "boss" in cal_regions:
+        r = cal_regions["boss"]
+        x1 = int(r["x"] * region_width)
+        y1 = int(r["y"] * region_height)
+        x2 = int((r["x"] + r["width"]) * region_width)
+        y2 = int((r["y"] + r["height"]) * region_height)
+        search_region = map_region[y1:y2, x1:x2]
+        using_calibration = True
+        cv2.imwrite("debug_boss_region.jpg", search_region)
+
     cv2.imwrite("debug_map_region.jpg", map_region)
 
     # Convert to grayscale
-    if len(map_region.shape) == 3:
-        gray = cv2.cvtColor(map_region, cv2.COLOR_BGR2GRAY)
+    if len(search_region.shape) == 3:
+        gray = cv2.cvtColor(search_region, cv2.COLOR_BGR2GRAY)
     else:
-        gray = map_region
+        gray = search_region
 
     all_scores = []
 
@@ -533,7 +505,6 @@ async def all_template_scores(monitor_index: int):
         for template_name in boss_detector.matcher.templates.keys():
             if "nightlords" in template_name:
                 short_name = template_name.replace("nightlords/", "")
-                template = boss_detector.matcher.templates[template_name]
 
                 # Try multi-scale matching with threshold=0 to get all scores
                 result = boss_detector.matcher.match_template_multi_scale(
@@ -563,6 +534,7 @@ async def all_template_scores(monitor_index: int):
     return {
         "threshold": threshold,
         "selected": selected,
+        "using_calibrated_region": using_calibration,
         "all_scores": all_scores,
         "hint": "Compare the top scores - if wrong template is being selected, templates may need re-extraction"
     }
@@ -749,15 +721,30 @@ async def process_frame(frame: np.ndarray) -> dict:
 
     region_height, region_width = map_region.shape[:2]
 
+    # Load calibration config for region-based detection
+    calibration = load_calibration_config()
+    cal_regions = calibration.get("regions", {})
+
     # Run detections
     nightlord_result = None
     spawn_result = None
     buildings_result = []
 
-    # Detect nightlord - search full map region for best match
+    # Detect nightlord - use calibrated region if available
     if boss_detector is not None and boss_detector.templates_loaded:
+        search_region = map_region
+        if "boss" in cal_regions:
+            # Extract the calibrated boss region
+            r = cal_regions["boss"]
+            x1 = int(r["x"] * region_width)
+            y1 = int(r["y"] * region_height)
+            x2 = int((r["x"] + r["width"]) * region_width)
+            y2 = int((r["y"] + r["height"]) * region_height)
+            search_region = map_region[y1:y2, x1:x2]
+            logger.debug(f"Using calibrated boss region: ({x1},{y1}) to ({x2},{y2})")
+
         best_match = boss_detector.matcher.find_best_match(
-            map_region, "nightlords", settings.template_match_threshold
+            search_region, "nightlords", settings.template_match_threshold
         )
         if best_match:
             template_name = best_match["template"]
@@ -805,7 +792,7 @@ async def process_frame(frame: np.ndarray) -> dict:
             poi_detections, region_width, region_height
         )
 
-    # Detect Shifting Earth event
+    # Detect Shifting Earth event - searches entire map for templates
     shifting_earth_result = None
     if shifting_earth_detector is not None and shifting_earth_detector.templates_loaded:
         se_detection = shifting_earth_detector.detect(map_region)
@@ -835,6 +822,214 @@ async def process_frame(frame: np.ndarray) -> dict:
             }
             for b in buildings_result
         ]
+    }
+
+
+# =============================================================================
+# CALIBRATION ENDPOINTS
+# =============================================================================
+
+@app.get("/calibrate")
+async def calibrate_page():
+    """Serve the calibration UI."""
+    static_dir = Path(__file__).parent.parent / "static"
+    html_file = static_dir / "calibrate.html"
+
+    if not html_file.exists():
+        raise HTTPException(status_code=404, detail="Calibration page not found")
+
+    with open(html_file, 'r') as f:
+        return HTMLResponse(content=f.read())
+
+
+@app.get("/calibration/capture/{monitor_index}")
+async def calibration_capture(monitor_index: int):
+    """Capture the map region and return as image for calibration UI."""
+    frame = screen_capture.capture_monitor(monitor_index)
+
+    if frame is None:
+        raise HTTPException(status_code=500, detail=f"Failed to capture monitor {monitor_index}")
+
+    # Extract map region
+    map_region = frame_processor.extract_map_region(frame)
+    if map_region is None:
+        raise HTTPException(status_code=500, detail="Failed to extract map region")
+
+    # Encode as JPEG
+    _, buffer = cv2.imencode('.jpg', map_region, [cv2.IMWRITE_JPEG_QUALITY, 90])
+
+    return Response(content=buffer.tobytes(), media_type="image/jpeg")
+
+
+@app.post("/calibration/save")
+async def calibration_save(data: dict):
+    """Save calibration regions to config file."""
+    try:
+        config = {
+            "regions": data.get("regions", {}),
+            "notes": "Coordinates are percentages (0-1) of the map region"
+        }
+        save_calibration_config(config)
+        logger.info(f"Calibration saved: {list(config['regions'].keys())}")
+        return {"status": "ok", "saved_regions": list(config["regions"].keys())}
+    except Exception as e:
+        logger.error(f"Failed to save calibration: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/calibration/load")
+async def calibration_load():
+    """Load calibration regions from config file."""
+    try:
+        config = load_calibration_config()
+        return config
+    except Exception as e:
+        logger.error(f"Failed to load calibration: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/calibration/save-template/{monitor_index}")
+async def save_template_direct(monitor_index: int, data: dict):
+    """Save a template directly from a drawn region.
+
+    For nightlord templates: uses the calibrated boss region (not the drawn box).
+    For other templates: uses the drawn box.
+
+    Args:
+        monitor_index: Monitor to capture from
+        data: { category: "shifting_earth"|"nightlords", templateName: "Crater", region: {x, y, width, height} }
+    """
+    category = data.get("category")
+    template_name = data.get("templateName")
+    region = data.get("region")
+
+    if not all([category, template_name, region]):
+        return {"error": "Missing category, templateName, or region"}
+
+    # Capture screen
+    frame = screen_capture.capture_monitor(monitor_index)
+    if frame is None:
+        raise HTTPException(status_code=500, detail=f"Failed to capture monitor {monitor_index}")
+
+    map_region = frame_processor.extract_map_region(frame)
+    if map_region is None:
+        raise HTTPException(status_code=500, detail="Failed to extract map region")
+
+    height, width = map_region.shape[:2]
+
+    # For nightlord templates, use the calibrated boss region instead of the drawn box
+    if category == "nightlords":
+        calibration = load_calibration_config()
+        cal_regions = calibration.get("regions", {})
+
+        if "boss" not in cal_regions:
+            return {"error": "No boss region calibrated. Please calibrate the boss region first."}
+
+        r = cal_regions["boss"]
+        x1 = int(r["x"] * width)
+        y1 = int(r["y"] * height)
+        x2 = int((r["x"] + r["width"]) * width)
+        y2 = int((r["y"] + r["height"]) * height)
+    else:
+        # Use the drawn region for other templates (shifting earth, etc.)
+        x1 = int(region["x"] * width)
+        y1 = int(region["y"] * height)
+        x2 = int((region["x"] + region["width"]) * width)
+        y2 = int((region["y"] + region["height"]) * height)
+
+    template = map_region[y1:y2, x1:x2]
+
+    if template.size == 0:
+        return {"error": "Empty template region"}
+
+    # Save to appropriate directory
+    save_dir = Path(__file__).parent.parent / "templates" / category
+    save_dir.mkdir(parents=True, exist_ok=True)
+    output_path = save_dir / f"{template_name}.png"
+
+    cv2.imwrite(str(output_path), template)
+
+    # Save debug image
+    debug_region = map_region.copy()
+    cv2.rectangle(debug_region, (x1, y1), (x2, y2), (0, 255, 0), 3)
+    cv2.putText(debug_region, f"{category}/{template_name}", (x1 + 10, y1 + 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.imwrite("debug_template_extraction.jpg", debug_region)
+
+    logger.info(f"Saved template: {output_path}")
+
+    return {
+        "message": f"Template saved",
+        "saved_to": str(output_path),
+        "template_size": {"width": x2 - x1, "height": y2 - y1}
+    }
+
+
+@app.post("/calibration/extract-template/{monitor_index}")
+async def extract_template_from_calibration(monitor_index: int, region_name: str, template_name: str):
+    """Extract a template from a calibrated region.
+
+    Args:
+        monitor_index: Monitor to capture from
+        region_name: Name of the calibrated region (e.g., "shifting_earth")
+        template_name: Name to save the template as (e.g., "Crater")
+    """
+    # Load calibration
+    config = load_calibration_config()
+    regions = config.get("regions", {})
+
+    if region_name not in regions:
+        return {"error": f"Region '{region_name}' not calibrated", "available": list(regions.keys())}
+
+    # Capture screen
+    frame = screen_capture.capture_monitor(monitor_index)
+    if frame is None:
+        raise HTTPException(status_code=500, detail=f"Failed to capture monitor {monitor_index}")
+
+    map_region = frame_processor.extract_map_region(frame)
+    if map_region is None:
+        raise HTTPException(status_code=500, detail="Failed to extract map region")
+
+    height, width = map_region.shape[:2]
+
+    # Extract the calibrated region
+    r = regions[region_name]
+    x1 = int(r["x"] * width)
+    y1 = int(r["y"] * height)
+    x2 = int((r["x"] + r["width"]) * width)
+    y2 = int((r["y"] + r["height"]) * height)
+
+    template = map_region[y1:y2, x1:x2]
+
+    if template.size == 0:
+        return {"error": "Empty template region"}
+
+    # Determine save path based on region type
+    region_type = r.get("type", region_name)
+    if region_type == "shifting_earth":
+        save_dir = Path(__file__).parent.parent / "templates" / "shifting_earth"
+    elif region_type == "boss":
+        save_dir = Path(__file__).parent.parent / "templates" / "nightlords"
+    else:
+        save_dir = Path(__file__).parent.parent / "templates" / region_type
+
+    save_dir.mkdir(parents=True, exist_ok=True)
+    output_path = save_dir / f"{template_name}.png"
+
+    cv2.imwrite(str(output_path), template)
+
+    # Save debug image showing extraction
+    debug_region = map_region.copy()
+    cv2.rectangle(debug_region, (x1, y1), (x2, y2), (0, 255, 0), 3)
+    cv2.putText(debug_region, f"{region_name}: {template_name}", (x1 + 10, y1 + 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    cv2.imwrite("debug_template_extraction.jpg", debug_region)
+
+    return {
+        "message": f"Extracted template '{template_name}' from region '{region_name}'",
+        "saved_to": str(output_path),
+        "template_size": {"width": x2 - x1, "height": y2 - y1},
+        "hint": "Restart the service to reload templates"
     }
 
 

@@ -1,55 +1,14 @@
 """Shifting Earth event detection using template matching."""
 
-import cv2
 import numpy as np
 from pathlib import Path
 from typing import Optional, Dict, List
 import logging
 
 from .template_matcher import TemplateMatcher
-from ..config import settings
 
 logger = logging.getLogger(__name__)
 
-
-# Shifting Earth types and their expected regions (in 1000x1000 coordinate system)
-SHIFTING_EARTH_REGIONS = {
-    "MountainTop": {
-        "x_start": 0.0,
-        "x_end": 0.4,
-        "y_start": 0.0,
-        "y_end": 0.4,
-        "description": "Large white embedded section in top-left"
-    },
-    "Crater": {
-        "x_start": 0.3,
-        "x_end": 0.7,
-        "y_start": 0.0,
-        "y_end": 0.35,
-        "description": "Large red/volcano embedded section in middle-top"
-    },
-    "Noklateo": {
-        "x_start": 0.0,
-        "x_end": 0.4,
-        "y_start": 0.6,
-        "y_end": 1.0,
-        "description": "Large blue/silver embedded section in bottom-left"
-    },
-    "RottedWoods": {
-        "x_start": 0.6,
-        "x_end": 1.0,
-        "y_start": 0.6,
-        "y_end": 1.0,
-        "description": "Large pink/barren embedded section in bottom-right"
-    },
-    "GreatHollow": {
-        "x_start": 0.0,
-        "x_end": 1.0,
-        "y_start": 0.0,
-        "y_end": 1.0,
-        "description": "Entirely different map layout"
-    }
-}
 
 # App IDs for shifting earth events (matching the frontend)
 SHIFTING_EARTH_MAPPING = {
@@ -73,7 +32,7 @@ class ShiftingEarthDetector:
         self.templates_dir = Path(templates_dir) if templates_dir else Path(__file__).parent.parent.parent / "templates"
         self.matcher = TemplateMatcher(str(self.templates_dir))
         self.templates_loaded = False
-        self.match_threshold = 0.85  # High threshold to avoid false positives
+        self.match_threshold = 0.65  # Lower threshold for terrain matching (more variable than icons)
 
     def load_templates(self) -> bool:
         """Load Shifting Earth templates.
@@ -94,13 +53,15 @@ class ShiftingEarthDetector:
     def detect(
         self,
         map_region: np.ndarray,
-        threshold: Optional[float] = None
+        threshold: Optional[float] = None,
+        use_calibrated_region: bool = False
     ) -> Optional[Dict]:
         """Detect Shifting Earth event on the map.
 
         Args:
             map_region: Extracted map region image.
             threshold: Detection confidence threshold.
+            use_calibrated_region: Deprecated, ignored. Always searches entire map.
 
         Returns:
             Detection result with event type and confidence, or None.
@@ -110,31 +71,20 @@ class ShiftingEarthDetector:
             return None
 
         threshold = threshold if threshold is not None else self.match_threshold
-        height, width = map_region.shape[:2]
 
         best_match = None
         best_confidence = 0
 
-        for event_name, region_info in SHIFTING_EARTH_REGIONS.items():
+        # Search the entire map for all shifting earth templates
+        for event_name in SHIFTING_EARTH_MAPPING.keys():
             template_name = f"shifting_earth/{event_name}"
 
             if template_name not in self.matcher.templates:
                 continue
 
-            # Extract the expected region for this event type
-            x1 = int(region_info["x_start"] * width)
-            x2 = int(region_info["x_end"] * width)
-            y1 = int(region_info["y_start"] * height)
-            y2 = int(region_info["y_end"] * height)
-
-            search_region = map_region[y1:y2, x1:x2]
-
-            if search_region.size == 0:
-                continue
-
-            # Try template matching in this region
+            # Try template matching across the entire map
             result = self.matcher.match_template_multi_scale(
-                search_region,
+                map_region,
                 template_name,
                 scales=[0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
                 threshold=0.0  # Get score even if below threshold
@@ -149,13 +99,7 @@ class ShiftingEarthDetector:
                         "event": SHIFTING_EARTH_MAPPING.get(event_name, event_name),
                         "event_name": event_name,
                         "confidence": confidence,
-                        "scale": scale,
-                        "region": {
-                            "x1": x1,
-                            "y1": y1,
-                            "x2": x2,
-                            "y2": y2
-                        }
+                        "scale": scale
                     }
 
         if best_match and best_match["confidence"] >= threshold:
@@ -180,12 +124,10 @@ class ShiftingEarthDetector:
         if not self.templates_loaded:
             return []
 
-        threshold = threshold if threshold is not None else 0.0  # Return all for debugging
-        height, width = map_region.shape[:2]
-
         results = []
 
-        for event_name, region_info in SHIFTING_EARTH_REGIONS.items():
+        # Search entire map for each template
+        for event_name in SHIFTING_EARTH_MAPPING.keys():
             template_name = f"shifting_earth/{event_name}"
 
             if template_name not in self.matcher.templates:
@@ -197,19 +139,8 @@ class ShiftingEarthDetector:
                 })
                 continue
 
-            # Extract the expected region
-            x1 = int(region_info["x_start"] * width)
-            x2 = int(region_info["x_end"] * width)
-            y1 = int(region_info["y_start"] * height)
-            y2 = int(region_info["y_end"] * height)
-
-            search_region = map_region[y1:y2, x1:x2]
-
-            if search_region.size == 0:
-                continue
-
             result = self.matcher.match_template_multi_scale(
-                search_region,
+                map_region,
                 template_name,
                 scales=[0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
                 threshold=0.0
@@ -222,12 +153,7 @@ class ShiftingEarthDetector:
                     "event_name": event_name,
                     "confidence": confidence,
                     "scale": scale,
-                    "region": {
-                        "x1": x1,
-                        "y1": y1,
-                        "x2": x2,
-                        "y2": y2
-                    }
+                    "match_position": {"x": x, "y": y}
                 })
 
         # Sort by confidence
