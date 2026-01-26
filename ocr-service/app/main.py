@@ -308,11 +308,38 @@ async def capture_field_boss(monitor_index: int):
     if boss_region.size == 0:
         return {"error": "Empty boss region - check calibration"}
 
-    # Save debug image
-    cv2.imwrite("debug_field_boss_region.jpg", boss_region)
+    # Create debug_captures directory
+    debug_dir = Path(__file__).parent.parent / "debug_captures"
+    debug_dir.mkdir(exist_ok=True)
+
+    # Generate timestamp for filenames
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+    # Save original screenshot
+    original_path = debug_dir / f"{timestamp}_original.jpg"
+    cv2.imwrite(str(original_path), boss_region)
 
     # Run OCR detection
     result = field_boss_detector.detect(boss_region)
+
+    # Create annotated version
+    annotated = boss_region.copy()
+    if result:
+        label = result["boss_name"]
+        color = (0, 255, 0)  # Green for success
+    else:
+        label = "NONE"
+        color = (0, 0, 255)  # Red for failure
+
+    # Add label to annotated image
+    cv2.putText(annotated, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+
+    # Save annotated version
+    safe_label = label.replace(" ", "_").replace("'", "")
+    annotated_path = debug_dir / f"{timestamp}_{safe_label}.jpg"
+    cv2.imwrite(str(annotated_path), annotated)
+
+    logger.info(f"Field boss debug saved: {original_path.name}, {annotated_path.name}")
 
     if result:
         # Broadcast to overlay
@@ -330,7 +357,8 @@ async def capture_field_boss(monitor_index: int):
             "raw_text": result["raw_text"],
             "confidence": result["confidence"],
             "negations": result["negations"],
-            "debug_image": "debug_field_boss_region.jpg"
+            "debug_original": str(original_path),
+            "debug_annotated": str(annotated_path)
         }
     else:
         # Broadcast error to overlay (shows red X for 3 seconds)
@@ -343,7 +371,8 @@ async def capture_field_boss(monitor_index: int):
         return {
             "detected": False,
             "hint": "No field boss name detected. Make sure boss name is visible on screen.",
-            "debug_image": "debug_field_boss_region.jpg"
+            "debug_original": str(original_path),
+            "debug_annotated": str(annotated_path)
         }
 
 
