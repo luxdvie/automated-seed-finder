@@ -17,7 +17,7 @@ import numpy as np
 
 from .config import settings, NIGHTLORD_MAPPING, NIGHTLORD_COORDINATE
 from .capture import VideoCapture, FrameProcessor, screen_capture
-from .detection import BossDetector, SpawnDetector, POIDetector, CoordinateMapper, ShiftingEarthDetector
+from .detection import BossDetector, SpawnDetector, POIDetector, CoordinateMapper, ShiftingEarthDetector, FieldBossDetector
 from .websocket import ConnectionManager
 
 # Configure logging
@@ -34,6 +34,7 @@ boss_detector: Optional[BossDetector] = None
 spawn_detector = SpawnDetector()
 poi_detector: Optional[POIDetector] = None
 shifting_earth_detector: Optional[ShiftingEarthDetector] = None
+field_boss_detector = FieldBossDetector()
 coordinate_mapper = CoordinateMapper()
 connection_manager = ConnectionManager()
 overlay_manager = ConnectionManager()  # Separate manager for overlay WebSocket clients
@@ -266,6 +267,77 @@ async def capture_monitor(monitor_index: int, debug: bool = False):
         })
 
     return result
+
+
+@app.get("/capture-field-boss/{monitor_index}")
+async def capture_field_boss(monitor_index: int):
+    """Capture screen and detect field boss using OCR.
+
+    Reads the boss name from the calibrated 'field_boss_name' region using OCR,
+    then looks up the boss's weaknesses/resistances.
+
+    Trigger from Stream Deck:
+        curl http://10.0.0.91:8000/capture-field-boss/2
+    """
+    # Check if field_boss_name region is calibrated
+    calibration = load_calibration_config()
+    cal_regions = calibration.get("regions", {})
+
+    if "field_boss_name" not in cal_regions:
+        return {
+            "error": "field_boss_name region not calibrated",
+            "hint": "Use /calibrate in Full Screen mode to draw a box around where field boss names appear"
+        }
+
+    # Capture full screen
+    frame = screen_capture.capture_monitor(monitor_index)
+    if frame is None:
+        raise HTTPException(status_code=500, detail=f"Failed to capture monitor {monitor_index}")
+
+    frame_h, frame_w = frame.shape[:2]
+
+    # Extract the field boss name region
+    region = cal_regions["field_boss_name"]
+    x1 = int(region["x"] * frame_w)
+    y1 = int(region["y"] * frame_h)
+    x2 = int((region["x"] + region["width"]) * frame_w)
+    y2 = int((region["y"] + region["height"]) * frame_h)
+
+    boss_region = frame[y1:y2, x1:x2]
+
+    if boss_region.size == 0:
+        return {"error": "Empty boss region - check calibration"}
+
+    # Save debug image
+    cv2.imwrite("debug_field_boss_region.jpg", boss_region)
+
+    # Run OCR detection
+    result = field_boss_detector.detect(boss_region)
+
+    if result:
+        # Broadcast to overlay
+        if overlay_manager.connection_count > 0:
+            await overlay_manager.broadcast({
+                "type": "field_boss",
+                "boss_name": result["boss_name"],
+                "negations": result["negations"],
+                "confidence": result["confidence"]
+            })
+
+        return {
+            "detected": True,
+            "boss_name": result["boss_name"],
+            "raw_text": result["raw_text"],
+            "confidence": result["confidence"],
+            "negations": result["negations"],
+            "debug_image": "debug_field_boss_region.jpg"
+        }
+    else:
+        return {
+            "detected": False,
+            "hint": "No field boss name detected. Make sure boss name is visible on screen.",
+            "debug_image": "debug_field_boss_region.jpg"
+        }
 
 
 @app.get("/debug-detection/{monitor_index}")
@@ -897,27 +969,34 @@ async def overlay_websocket(websocket: WebSocket):
 
 
 @app.get("/overlay-command")
-async def overlay_command(command: str, boss: Optional[str] = None):
+async def overlay_command(command: str, boss: Optional[str] = None, fieldBoss: Optional[str] = None):
     """Send a command to all overlay clients.
 
     Commands:
         hide - Make overlay transparent/invisible
         show - Make overlay visible again
         reset - Reset overlay state (hides until next detection)
-        showBoss - Show a specific boss (requires boss param)
+        showBoss - Show a specific nightlord (requires boss param)
+        showFieldBoss - Show a specific field boss (requires fieldBoss param)
+        hideFieldBoss - Hide the field boss panel
 
     Trigger from Stream Deck:
         http://10.0.0.91:8000/overlay-command?command=hide
         http://10.0.0.91:8000/overlay-command?command=show
         http://10.0.0.91:8000/overlay-command?command=reset
         http://10.0.0.91:8000/overlay-command?command=showBoss&boss=10_Greg
+        http://10.0.0.91:8000/overlay-command?command=showFieldBoss&fieldBoss=Blackgaol%20Knight
+        http://10.0.0.91:8000/overlay-command?command=hideFieldBoss
     """
-    valid_commands = ["hide", "show", "reset", "showBoss"]
+    valid_commands = ["hide", "show", "reset", "showBoss", "showFieldBoss", "hideFieldBoss"]
     if command not in valid_commands:
         return {"error": f"Invalid command. Valid: {valid_commands}"}
 
     if command == "showBoss" and not boss:
         return {"error": "showBoss requires boss parameter (e.g., boss=10_Greg)"}
+
+    if command == "showFieldBoss" and not fieldBoss:
+        return {"error": "showFieldBoss requires fieldBoss parameter (e.g., fieldBoss=Blackgaol%20Knight)"}
 
     if overlay_manager.connection_count == 0:
         return {"status": "no_clients", "message": "No overlay clients connected"}
@@ -925,11 +1004,19 @@ async def overlay_command(command: str, boss: Optional[str] = None):
     message = {"type": "command", "command": command}
     if boss:
         message["boss"] = boss
+    if fieldBoss:
+        # Look up field boss data
+        from .detection.field_boss_detector import FIELD_BOSS_DATA
+        boss_data = FIELD_BOSS_DATA.get(fieldBoss)
+        if not boss_data:
+            return {"error": f"Unknown field boss: {fieldBoss}", "known_bosses": list(FIELD_BOSS_DATA.keys())}
+        message["fieldBoss"] = fieldBoss
+        message["negations"] = boss_data["negations"]
 
     await overlay_manager.broadcast(message)
 
-    logger.info(f"Overlay command sent: {command}" + (f" boss={boss}" if boss else ""))
-    return {"status": "ok", "command": command, "boss": boss, "clients": overlay_manager.connection_count}
+    logger.info(f"Overlay command sent: {command}" + (f" boss={boss}" if boss else "") + (f" fieldBoss={fieldBoss}" if fieldBoss else ""))
+    return {"status": "ok", "command": command, "boss": boss, "fieldBoss": fieldBoss, "clients": overlay_manager.connection_count}
 
 
 @app.get("/calibration/capture/{monitor_index}")

@@ -16,20 +16,48 @@
             color: #fff;
         }
 
-        /* Boss weaknesses - top right */
-        .boss-panel {
+        /* Shared panel styles */
+        .panel {
             position: absolute;
-            top: 20px;
-            right: 20px;
             background: rgba(0, 0, 0, 0.8);
             border-radius: 8px;
             padding: 10px 14px;
-            border-left: 3px solid #ffd700;
             min-width: 140px;
         }
 
-        .boss-panel.hidden {
+        .panel.hidden {
             display: none;
+        }
+
+        /* Nightlord panel - top right (gold border) */
+        .nightlord-panel {
+            top: 20px;
+            right: 20px;
+            border-left: 3px solid #ffd700;
+        }
+
+        /* Field boss panel - top left (cyan border) */
+        .field-boss-panel {
+            top: 20px;
+            left: 20px;
+            border-left: 3px solid #00d4ff;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .boss-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #333;
         }
 
         .row {
@@ -76,15 +104,26 @@
         .lightning { color: #fbbf24; }
         .magic { color: #60a5fa; }
         .holy { color: #fef08a; }
-
-        /* Future panels can go here */
-        /* .spawn-panel { position: absolute; bottom: 20px; left: 20px; } */
-        /* .shifting-earth-panel { position: absolute; top: 20px; left: 20px; } */
     </style>
 </head>
 <body>
-    <!-- Boss Weaknesses Panel - Top Right -->
-    <div id="bossPanel" class="boss-panel hidden">
+    <!-- Field Boss Panel - Top Left -->
+    <div id="fieldBossPanel" class="panel field-boss-panel hidden">
+        <div class="panel-title">Field Boss</div>
+        <div class="boss-name" id="fieldBossName"></div>
+        <div id="fieldWeakSection" class="section">
+            <div class="section-title">Weak</div>
+            <div id="fieldWeakList"></div>
+        </div>
+        <div id="fieldResistSection" class="section">
+            <div class="section-title">Resist</div>
+            <div id="fieldResistList"></div>
+        </div>
+    </div>
+
+    <!-- Nightlord Panel - Top Right -->
+    <div id="nightlordPanel" class="panel nightlord-panel hidden">
+        <div class="panel-title">Nightlord</div>
         <div id="weakSection" class="section">
             <div class="section-title">Weak</div>
             <div id="weakList"></div>
@@ -96,7 +135,8 @@
     </div>
 
     <script>
-        const BOSS_DATA = {
+        // Nightlord data (by app ID)
+        const NIGHTLORD_DATA = {
             "1_Gladius": {
                 negations: { standard: 0, slash: 0, strike: 0, pierce: -10, magic: 0, fire: 50, lightning: 0, holy: -35 }
             },
@@ -138,10 +178,11 @@
             fire: "fire", lightning: "lightning", magic: "magic", holy: "holy"
         };
 
-        let currentBoss = null;
+        let currentNightlord = null;
+        let currentFieldBoss = null;
         let ws = null;
         let isVisible = true;
-        let isPaused = false;  // When true, don't update on detection
+        let isPaused = false;
 
         function setOverlayVisible(visible) {
             isVisible = visible;
@@ -150,27 +191,17 @@
 
         function resetOverlay() {
             isPaused = false;
-            currentBoss = null;
-            document.getElementById('bossPanel').classList.add('hidden');
+            currentNightlord = null;
+            currentFieldBoss = null;
+            document.getElementById('nightlordPanel').classList.add('hidden');
+            document.getElementById('fieldBossPanel').classList.add('hidden');
         }
 
-        function renderBoss(bossId) {
-            if (isPaused) return;  // Don't update if paused
-            const boss = BOSS_DATA[bossId];
-            const panel = document.getElementById('bossPanel');
-
-            if (!boss) {
-                panel.classList.add('hidden');
-                currentBoss = null;
-                return;
-            }
-
-            panel.classList.remove('hidden');
-
+        function renderWeaknessPanel(negations, weakListId, weakSectionId, resistListId, resistSectionId) {
             const weaknesses = [];
             const resistances = [];
 
-            for (const [type, val] of Object.entries(boss.negations)) {
+            for (const [type, val] of Object.entries(negations)) {
                 if (val < 0) weaknesses.push({ type, val });
                 else if (val > 0) resistances.push({ type, val });
             }
@@ -178,8 +209,8 @@
             weaknesses.sort((a, b) => a.val - b.val);
             resistances.sort((a, b) => b.val - a.val);
 
-            const weakEl = document.getElementById('weakList');
-            const weakSection = document.getElementById('weakSection');
+            const weakEl = document.getElementById(weakListId);
+            const weakSection = document.getElementById(weakSectionId);
             if (weaknesses.length === 0) {
                 weakSection.classList.add('hidden');
             } else {
@@ -192,8 +223,8 @@
                 `).join('');
             }
 
-            const resistEl = document.getElementById('resistList');
-            const resistSection = document.getElementById('resistSection');
+            const resistEl = document.getElementById(resistListId);
+            const resistSection = document.getElementById(resistSectionId);
             if (resistances.length === 0) {
                 resistSection.classList.add('hidden');
             } else {
@@ -207,9 +238,39 @@
             }
         }
 
-        function hideBoss() {
-            document.getElementById('bossPanel').classList.add('hidden');
-            currentBoss = null;
+        function renderNightlord(bossId) {
+            if (isPaused) return;
+            const boss = NIGHTLORD_DATA[bossId];
+            const panel = document.getElementById('nightlordPanel');
+
+            if (!boss) {
+                panel.classList.add('hidden');
+                currentNightlord = null;
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            renderWeaknessPanel(boss.negations, 'weakList', 'weakSection', 'resistList', 'resistSection');
+        }
+
+        function renderFieldBoss(bossName, negations) {
+            if (isPaused) return;
+            const panel = document.getElementById('fieldBossPanel');
+
+            if (!bossName || !negations) {
+                panel.classList.add('hidden');
+                currentFieldBoss = null;
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            document.getElementById('fieldBossName').textContent = bossName;
+            renderWeaknessPanel(negations, 'fieldWeakList', 'fieldWeakSection', 'fieldResistList', 'fieldResistSection');
+        }
+
+        function hideFieldBoss() {
+            document.getElementById('fieldBossPanel').classList.add('hidden');
+            currentFieldBoss = null;
         }
 
         function connectWebSocket() {
@@ -227,7 +288,6 @@
                     const data = JSON.parse(event.data);
 
                     if (data.type === 'command') {
-                        // Handle overlay commands from Stream Deck
                         switch (data.command) {
                             case 'hide':
                                 setOverlayVisible(false);
@@ -241,20 +301,35 @@
                             case 'showBoss':
                                 if (data.boss) {
                                     isPaused = false;
-                                    currentBoss = data.boss;
-                                    renderBoss(data.boss);
+                                    currentNightlord = data.boss;
+                                    renderNightlord(data.boss);
                                 }
+                                break;
+                            case 'showFieldBoss':
+                                if (data.fieldBoss && data.negations) {
+                                    isPaused = false;
+                                    currentFieldBoss = data.fieldBoss;
+                                    renderFieldBoss(data.fieldBoss, data.negations);
+                                }
+                                break;
+                            case 'hideFieldBoss':
+                                hideFieldBoss();
                                 break;
                         }
                     } else if (data.type === 'detection') {
-                        // Update boss panel
+                        // Nightlord detection from map capture
                         if (data.nightlord && data.nightlord_confidence > 0.7) {
-                            if (data.nightlord !== currentBoss) {
-                                currentBoss = data.nightlord;
-                                renderBoss(currentBoss);
+                            if (data.nightlord !== currentNightlord) {
+                                currentNightlord = data.nightlord;
+                                renderNightlord(currentNightlord);
                             }
                         }
-                        // Future: handle shifting_earth, spawn, etc.
+                    } else if (data.type === 'field_boss') {
+                        // Field boss detection from OCR
+                        if (data.boss_name && data.negations) {
+                            currentFieldBoss = data.boss_name;
+                            renderFieldBoss(data.boss_name, data.negations);
+                        }
                     }
                 } catch (e) {
                     console.error('Parse error:', e);
@@ -271,13 +346,20 @@
             };
         }
 
-        // URL param to test: ?boss=10_Greg
+        // URL params for testing
         const urlParams = new URLSearchParams(window.location.search);
         const testBoss = urlParams.get('boss');
+        const testFieldBoss = urlParams.get('fieldBoss');
 
         if (testBoss) {
-            renderBoss(testBoss);
-        } else {
+            renderNightlord(testBoss);
+        }
+        if (testFieldBoss) {
+            // For testing, use placeholder negations
+            renderFieldBoss(testFieldBoss, { standard: 0, slash: 0, strike: -15, pierce: 0, magic: 0, fire: -10, lightning: -20, holy: 0 });
+        }
+
+        if (!testBoss && !testFieldBoss) {
             connectWebSocket();
         }
     </script>
