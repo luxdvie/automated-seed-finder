@@ -2,171 +2,470 @@
   "nightlords": {
     "1_Gladius": {
       "type": "nightlord",
-      "names": ["Gladius", "Gladius, Beast of Night"],
-      "template_names": ["Tricephalos"],
+      "names": [
+        "Gladius",
+        "Gladius, Beast of Night"
+      ],
+      "template_names": [
+        "Tricephalos"
+      ],
       "negations": {
-        "standard": 0, "slash": 0, "strike": 0, "pierce": -10,
-        "magic": 0, "fire": 50, "lightning": 0, "holy": -35
+        "standard": 0,
+        "slash": 0,
+        "strike": 0,
+        "pierce": -10,
+        "magic": 0,
+        "fire": 50,
+        "lightning": 0,
+        "holy": -35
       },
       "status_resistances": {
-        "poison": [542, 999],
-        "scarlet_rot": [252, 542, 999],
-        "blood_loss": [252, 542, 999],
-        "frostbite": [542, 999],
-        "sleep": [154, 252, 542, 999],
+        "poison": [
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
         "madness": "immune"
       }
     },
     "2_Adel": {
       "type": "nightlord",
-      "names": ["Adel", "Adel, Baron of Night"],
-      "template_names": ["GapingJaw"],
+      "names": [
+        "Adel",
+        "Adel, Baron of Night"
+      ],
+      "template_names": [
+        "GapingJaw"
+      ],
       "negations": {
-        "standard": 0, "slash": 0, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": 20, "lightning": 50, "holy": 0
+        "standard": 0,
+        "slash": 0,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": 20,
+        "lightning": 50,
+        "holy": 0
       },
       "status_resistances": {
-        "poison": [154, 252, 542, 999],
-        "scarlet_rot": [154, 252, 542, 999],
-        "blood_loss": [542, 999],
-        "frostbite": [154, 252, 542, 999],
-        "sleep": [154, 252, 542, 999],
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
         "madness": "immune"
       }
     },
     "3_Gnoster": {
       "type": "nightlord",
-      "names": ["Gnoster", "Gnoster, Wisdom of Night"],
-      "template_names": ["SentientPest"],
+      "names": [
+        "Gnoster",
+        "Gnoster, Wisdom of Night"
+      ],
+      "template_names": [
+        "SentientPest"
+      ],
       "negations": {
-        "standard": -15, "slash": -25, "strike": -15, "pierce": -25,
-        "magic": 50, "fire": -40, "lightning": 10, "holy": 10
+        "standard": -15,
+        "slash": -25,
+        "strike": -15,
+        "pierce": -25,
+        "magic": 50,
+        "fire": -40,
+        "lightning": 10,
+        "holy": 10
       },
       "status_resistances": {
-        "poison": [542, 999],
-        "scarlet_rot": [154, 252, 542, 999],
-        "blood_loss": [154, 252, 542, 999],
-        "frostbite": [154, 252, 542, 999],
-        "sleep": [542, 999],
+        "poison": [
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          542,
+          999
+        ],
         "madness": "immune"
       }
     },
     "4_Maris": {
       "type": "nightlord",
-      "names": ["Maris", "Maris, Fathom of Night"],
-      "template_names": ["Augur"],
+      "names": [
+        "Maris",
+        "Maris, Fathom of Night"
+      ],
+      "template_names": [
+        "Augur"
+      ],
       "negations": {
-        "standard": 0, "slash": -15, "strike": 20, "pierce": 10,
-        "magic": 20, "fire": 50, "lightning": -40, "holy": 15
+        "standard": 0,
+        "slash": -15,
+        "strike": 20,
+        "pierce": 10,
+        "magic": 20,
+        "fire": 50,
+        "lightning": -40,
+        "holy": 15
       },
       "status_resistances": {
         "poison": "immune",
-        "scarlet_rot": [252, 542, 999],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
         "blood_loss": "immune",
-        "frostbite": [252, 542, 999],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
         "sleep": "immune",
         "madness": "immune"
       }
     },
     "5_Libra": {
       "type": "nightlord",
-      "names": ["Libra", "Libra, Creature of Night"],
-      "template_names": ["EquilibrousBeast", "Libra"],
+      "names": [
+        "Libra",
+        "Libra, Creature of Night"
+      ],
+      "template_names": [
+        "EquilibrousBeast",
+        "Libra"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 20, "fire": -20, "lightning": 0, "holy": -35
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 20,
+        "fire": -20,
+        "lightning": 0,
+        "holy": -35
       },
       "status_resistances": {
-        "poison": [154, 252, 542, 999],
-        "scarlet_rot": [154, 252, 542, 999],
-        "blood_loss": [252, 542, 999],
-        "frostbite": [252, 542, 999],
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
         "sleep": "immune",
-        "madness": [154, 252, 542, 999]
+        "madness": [
+          154,
+          252,
+          542,
+          999
+        ]
       }
     },
     "6_Fulghor": {
       "type": "nightlord",
-      "names": ["Fulghor", "Fulghor, Champion of Nightglow"],
-      "template_names": ["DarkdriftKnight"],
+      "names": [
+        "Fulghor",
+        "Fulghor, Champion of Nightglow"
+      ],
+      "template_names": [
+        "DarkdriftKnight"
+      ],
       "negations": {
-        "standard": 0, "slash": 0, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": 0, "lightning": -20, "holy": 30
+        "standard": 0,
+        "slash": 0,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": 0,
+        "lightning": -20,
+        "holy": 30
       },
       "status_resistances": {
-        "poison": [154, 252, 542, 999],
-        "scarlet_rot": [154, 252, 542, 999],
-        "blood_loss": [154, 252, 542, 999],
-        "frostbite": [154, 252, 542, 999],
-        "sleep": [154, 252, 542, 999],
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
         "madness": "immune"
       }
     },
     "7_Caligo": {
       "type": "nightlord",
-      "names": ["Caligo", "Caligo, Miasma of Night"],
-      "template_names": ["FissureInTheFog", "Caligo"],
+      "names": [
+        "Caligo",
+        "Caligo, Miasma of Night"
+      ],
+      "template_names": [
+        "FissureInTheFog",
+        "Caligo"
+      ],
       "negations": {
-        "standard": 15, "slash": 15, "strike": -15, "pierce": 10,
-        "magic": 20, "fire": -35, "lightning": 20, "holy": 20
+        "standard": 15,
+        "slash": 15,
+        "strike": -15,
+        "pierce": 10,
+        "magic": 20,
+        "fire": -35,
+        "lightning": 20,
+        "holy": 20
       },
       "status_resistances": {
-        "poison": [252, 542, 999],
-        "scarlet_rot": [252, 542, 999],
-        "blood_loss": [252, 542, 999],
-        "frostbite": [542, 999],
-        "sleep": [542, 999],
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          542,
+          999
+        ],
+        "sleep": [
+          542,
+          999
+        ],
         "madness": "immune"
       }
     },
     "8_Heolstor": {
       "type": "nightlord",
-      "names": ["Heolstor", "Heolstor, the Nightlord"],
-      "template_names": ["NightAspect", "Heolstor"],
+      "names": [
+        "Heolstor",
+        "Heolstor, the Nightlord"
+      ],
+      "template_names": [
+        "NightAspect",
+        "Heolstor"
+      ],
       "negations": {
-        "standard": 0, "slash": -15, "strike": 10, "pierce": -10,
-        "magic": 0, "fire": -20, "lightning": 0, "holy": -35
+        "standard": 0,
+        "slash": -15,
+        "strike": 10,
+        "pierce": -10,
+        "magic": 0,
+        "fire": -20,
+        "lightning": 0,
+        "holy": -35
       },
       "status_resistances": {
         "poison": "immune",
-        "scarlet_rot": [252, 542, 999],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
         "blood_loss": "immune",
         "frostbite": "immune",
-        "sleep": [542, 999],
+        "sleep": [
+          542,
+          999
+        ],
         "madness": "immune"
       }
     },
     "9_Balancers": {
       "type": "nightlord",
-      "names": ["Balancers", "Weapon Bequeathed Harmonia"],
-      "template_names": ["Balancers"],
+      "names": [
+        "Balancers",
+        "Weapon Bequeathed Harmonia"
+      ],
+      "template_names": [
+        "Balancers"
+      ],
       "negations": {
-        "standard": 0, "slash": 8, "strike": -10, "pierce": 0,
-        "magic": 0, "fire": 8, "lightning": 10, "holy": 30
+        "standard": 0,
+        "slash": 8,
+        "strike": -10,
+        "pierce": 0,
+        "magic": 0,
+        "fire": 8,
+        "lightning": 10,
+        "holy": 30
       },
       "status_resistances": {
-        "poison": [252, 542, 999],
-        "scarlet_rot": [252, 542, 999],
-        "blood_loss": [252, 542, 999],
-        "frostbite": [252, 542, 999],
-        "sleep": [84, 154, 252, 542, 999],
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          84,
+          154,
+          252,
+          542,
+          999
+        ],
         "madness": "immune"
       }
     },
     "10_Greg": {
       "type": "nightlord",
-      "names": ["Greg", "Tricephalos"],
-      "template_names": ["Dreglord", "Greg"],
+      "names": [
+        "Greg",
+        "Tricephalos"
+      ],
+      "template_names": [
+        "Dreglord",
+        "Greg"
+      ],
       "negations": {
-        "standard": 0, "slash": 0, "strike": 0, "pierce": -10,
-        "magic": 0, "fire": 50, "lightning": 0, "holy": -35
+        "standard": 0,
+        "slash": 0,
+        "strike": 0,
+        "pierce": -10,
+        "magic": 0,
+        "fire": 50,
+        "lightning": 0,
+        "holy": -35
       },
       "status_resistances": {
-        "poison": [542, 999],
-        "scarlet_rot": [252, 542, 999],
-        "blood_loss": [252, 542, 999],
-        "frostbite": [542, 999],
-        "sleep": [154, 252, 542, 999],
+        "poison": [
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
         "madness": "immune"
       }
     }
@@ -174,430 +473,1996 @@
   "field_bosses": {
     "Ancestor Spirit": {
       "type": "field_boss",
-      "names": ["Ancestor Spirit"],
-      "ocr_spellings": ["Ancestor Sp1rit"],
+      "names": [
+        "Ancestor Spirit"
+      ],
+      "ocr_spellings": [
+        "Ancestor Sp1rit"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 20, "fire": -20, "lightning": 0, "holy": -20
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 20,
+        "fire": -20,
+        "lightning": 0,
+        "holy": -20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          542,
+          999
+        ],
+        "blood_loss": [
+          542,
+          999
+        ],
+        "frostbite": [
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Ancient Hero of Zamor": {
       "type": "field_boss",
-      "names": ["Ancient Hero of Zamor"],
-      "ocr_spellings": ["Anc1ent Hero of Zamor"],
+      "names": [
+        "Ancient Hero of Zamor"
+      ],
+      "ocr_spellings": [
+        "Anc1ent Hero of Zamor"
+      ],
       "negations": {
-        "standard": 10, "slash": 10, "strike": 10, "pierce": 0,
-        "magic": 0, "fire": -20, "lightning": -20, "holy": 0
+        "standard": 10,
+        "slash": 10,
+        "strike": 10,
+        "pierce": 0,
+        "magic": 0,
+        "fire": -20,
+        "lightning": -20,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Bell Bearing Hunter": {
       "type": "field_boss",
-      "names": ["Bell Bearing Hunter"],
-      "ocr_spellings": ["Be11 Bearing Hunter", "Bell 8earing Hunter"],
+      "names": [
+        "Bell Bearing Hunter"
+      ],
+      "ocr_spellings": [
+        "Be11 Bearing Hunter",
+        "Bell 8earing Hunter"
+      ],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 10,
-        "magic": 40, "fire": 40, "lightning": 20, "holy": 40
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 10,
+        "magic": 40,
+        "fire": 40,
+        "lightning": 20,
+        "holy": 40
       },
       "status_resistances": {
-        "poison": [154, 252, 542, 999],
-        "scarlet_rot": [154, 252, 542, 999],
-        "blood_loss": [252, 542, 999],
-        "frostbite": [252, 542, 999],
-        "sleep": [154, 252, 542, 999],
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
         "madness": "immune"
       }
     },
     "Black Knife Assassin": {
       "type": "field_boss",
-      "names": ["Black Knife Assassin"],
-      "ocr_spellings": ["B1ack Knife Assassin", "Black Kn1fe Assassin"],
+      "names": [
+        "Black Knife Assassin"
+      ],
+      "ocr_spellings": [
+        "B1ack Knife Assassin",
+        "Black Kn1fe Assassin"
+      ],
       "negations": {
-        "standard": 10, "slash": 10, "strike": 10, "pierce": 35,
-        "magic": 20, "fire": 20, "lightning": 20, "holy": 40
+        "standard": 10,
+        "slash": 10,
+        "strike": 10,
+        "pierce": 35,
+        "magic": 20,
+        "fire": 20,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": "immune",
+        "scarlet_rot": "immune",
+        "blood_loss": "immune",
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Death Rite Bird": {
       "type": "field_boss",
-      "names": ["Death Rite Bird"],
-      "ocr_spellings": ["Death R1te Bird", "Death Rite 8ird"],
+      "names": [
+        "Death Rite Bird"
+      ],
+      "ocr_spellings": [
+        "Death R1te Bird",
+        "Death Rite 8ird"
+      ],
       "negations": {
-        "standard": 10, "slash": 10, "strike": -40, "pierce": 35,
-        "magic": 20, "fire": 20, "lightning": 40, "holy": -40
+        "standard": 10,
+        "slash": 10,
+        "strike": -40,
+        "pierce": 35,
+        "magic": 20,
+        "fire": 20,
+        "lightning": 40,
+        "holy": -40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": "immune",
+        "scarlet_rot": [
+          253,
+          542,
+          999
+        ],
+        "blood_loss": "immune",
+        "frostbite": "immune",
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Demi-Human Queen": {
       "type": "field_boss",
-      "names": ["Demi-Human Queen"],
-      "ocr_spellings": ["Demi-Human Oueen", "Demi Human Queen", "DemiHuman Queen", "Demi-Human Gueen"],
+      "names": [
+        "Demi-Human Queen"
+      ],
+      "ocr_spellings": [
+        "Demi-Human Oueen",
+        "Demi Human Queen",
+        "DemiHuman Queen",
+        "Demi-Human Gueen"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": -20, "lightning": 0, "holy": 0
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": -20,
+        "lightning": 0,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          84,
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          84,
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Draconic Tree Sentinel": {
       "type": "field_boss",
-      "names": ["Draconic Tree Sentinel"],
-      "ocr_spellings": ["Dracon1c Tree Sentinel", "Draconic Tree Sent1nel"],
+      "names": [
+        "Draconic Tree Sentinel"
+      ],
+      "ocr_spellings": [
+        "Dracon1c Tree Sentinel",
+        "Draconic Tree Sent1nel"
+      ],
       "negations": {
-        "standard": 10, "slash": 35, "strike": 10, "pierce": 10,
-        "magic": 20, "fire": 40, "lightning": 40, "holy": 20
+        "standard": 10,
+        "slash": 35,
+        "strike": 10,
+        "pierce": 10,
+        "magic": 20,
+        "fire": 40,
+        "lightning": 40,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Elder Lion": {
       "type": "field_boss",
-      "names": ["Elder Lion"],
-      "ocr_spellings": ["E1der Lion", "Elder L1on"],
+      "names": [
+        "Elder Lion"
+      ],
+      "ocr_spellings": [
+        "E1der Lion",
+        "Elder L1on"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": -20, "lightning": 0, "holy": 0
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": -20,
+        "lightning": 0,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Erdtree Avatar": {
       "type": "field_boss",
-      "names": ["Erdtree Avatar"],
-      "ocr_spellings": ["Erdtree Avater"],
+      "names": [
+        "Erdtree Avatar"
+      ],
+      "ocr_spellings": [
+        "Erdtree Avater"
+      ],
       "negations": {
-        "standard": 10, "slash": 10, "strike": 0, "pierce": 10,
-        "magic": 20, "fire": -40, "lightning": 20, "holy": 40
+        "standard": 10,
+        "slash": 10,
+        "strike": 0,
+        "pierce": 10,
+        "magic": 20,
+        "fire": -40,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": "immune",
+        "frostbite": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Flying Dragon": {
       "type": "field_boss",
-      "names": ["Flying Dragon"],
-      "ocr_spellings": ["F1ying Dragon", "Flying Oragon"],
+      "names": [
+        "Flying Dragon"
+      ],
+      "ocr_spellings": [
+        "F1ying Dragon",
+        "Flying Oragon"
+      ],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 10,
-        "magic": 40, "fire": 40, "lightning": 40, "holy": 40
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 10,
+        "magic": 40,
+        "fire": 40,
+        "lightning": 40,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Flying Dragon of the Hills": {
       "type": "field_boss",
-      "names": ["Flying Dragon of the Hills"],
+      "names": [
+        "Flying Dragon of the Hills"
+      ],
       "ocr_spellings": [],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 10,
-        "magic": 40, "fire": 40, "lightning": 40, "holy": 40
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 10,
+        "magic": 40,
+        "fire": 40,
+        "lightning": 40,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Golden Hippopotamus": {
       "type": "field_boss",
-      "names": ["Golden Hippopotamus"],
-      "ocr_spellings": ["Golden Hippopotarnus", "Go1den Hippopotamus"],
+      "names": [
+        "Golden Hippopotamus"
+      ],
+      "ocr_spellings": [
+        "Golden Hippopotarnus",
+        "Go1den Hippopotamus"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": -20, "lightning": -20, "holy": 0
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": -20,
+        "lightning": -20,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Leonine Misbegotten": {
       "type": "field_boss",
-      "names": ["Leonine Misbegotten"],
-      "ocr_spellings": ["Leon1ne Misbegotten", "Leonine Misbegoten"],
+      "names": [
+        "Leonine Misbegotten"
+      ],
+      "ocr_spellings": [
+        "Leon1ne Misbegotten",
+        "Leonine Misbegoten"
+      ],
       "negations": {
-        "standard": 10, "slash": 0, "strike": 10, "pierce": 10,
-        "magic": 20, "fire": 0, "lightning": 20, "holy": 20
+        "standard": 10,
+        "slash": 0,
+        "strike": 10,
+        "pierce": 10,
+        "magic": 20,
+        "fire": 0,
+        "lightning": 20,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Miranda Blossom": {
       "type": "field_boss",
-      "names": ["Miranda Blossom"],
-      "ocr_spellings": ["M1randa Blossom"],
+      "names": [
+        "Miranda Blossom"
+      ],
+      "ocr_spellings": [
+        "M1randa Blossom"
+      ],
       "negations": {
-        "standard": -10, "slash": -40, "strike": 10, "pierce": -10,
-        "magic": -20, "fire": -40, "lightning": 20, "holy": 20
+        "standard": -10,
+        "slash": -40,
+        "strike": 10,
+        "pierce": -10,
+        "magic": -20,
+        "fire": -40,
+        "lightning": 20,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          63,
+          84,
+          112,
+          154,
+          252,
+          542
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Night's Cavalry": {
       "type": "field_boss",
-      "names": ["Night's Cavalry"],
-      "ocr_spellings": ["N1ght's Cavalry", "Night's Cava1ry", "Nights Cavalry"],
+      "names": [
+        "Night's Cavalry"
+      ],
+      "ocr_spellings": [
+        "N1ght's Cavalry",
+        "Night's Cava1ry",
+        "Nights Cavalry"
+      ],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 10,
-        "magic": 40, "fire": 40, "lightning": 20, "holy": 40
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 10,
+        "magic": 40,
+        "fire": 40,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Red Wolf of the King Consort": {
       "type": "field_boss",
-      "names": ["Red Wolf of the King Consort"],
-      "ocr_spellings": ["Red Wo1f of the King Consort", "Red Wolf of the K1ng Consort"],
+      "names": [
+        "Red Wolf of the King Consort"
+      ],
+      "ocr_spellings": [
+        "Red Wo1f of the King Consort",
+        "Red Wolf of the K1ng Consort"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 40, "fire": 20, "lightning": 20, "holy": 20
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 40,
+        "fire": 20,
+        "lightning": 20,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Royal Carian Knight": {
       "type": "field_boss",
-      "names": ["Royal Carian Knight"],
-      "ocr_spellings": ["Royal Carian Kn1ght", "Roya1 Carian Knight"],
+      "names": [
+        "Royal Carian Knight"
+      ],
+      "ocr_spellings": [
+        "Royal Carian Kn1ght",
+        "Roya1 Carian Knight"
+      ],
       "negations": {
-        "standard": 10, "slash": 10, "strike": 10, "pierce": 10,
-        "magic": 40, "fire": 40, "lightning": 0, "holy": 20
+        "standard": 10,
+        "slash": 10,
+        "strike": 10,
+        "pierce": 10,
+        "magic": 40,
+        "fire": 40,
+        "lightning": 0,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Royal Revenant": {
       "type": "field_boss",
-      "names": ["Royal Revenant"],
-      "ocr_spellings": ["Roya1 Revenant"],
+      "names": [
+        "Royal Revenant"
+      ],
+      "ocr_spellings": [
+        "Roya1 Revenant"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": 0, "lightning": 0, "holy": 40
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": 0,
+        "lightning": 0,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Tree Sentinel": {
       "type": "field_boss",
-      "names": ["Tree Sentinel"],
-      "ocr_spellings": ["Tree Sent1nel", "Tree Sentine1"],
+      "names": [
+        "Tree Sentinel"
+      ],
+      "ocr_spellings": [
+        "Tree Sent1nel",
+        "Tree Sentine1"
+      ],
       "negations": {
-        "standard": 10, "slash": 35, "strike": 10, "pierce": 10,
-        "magic": 20, "fire": 40, "lightning": 0, "holy": 40
+        "standard": 10,
+        "slash": 35,
+        "strike": 10,
+        "pierce": 10,
+        "magic": 20,
+        "fire": 40,
+        "lightning": 0,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Ulcerated Tree Spirit": {
       "type": "field_boss",
-      "names": ["Ulcerated Tree Spirit"],
-      "ocr_spellings": ["U1cerated Tree Spirit", "Ulcerated Tree Sp1rit"],
+      "names": [
+        "Ulcerated Tree Spirit"
+      ],
+      "ocr_spellings": [
+        "U1cerated Tree Spirit",
+        "Ulcerated Tree Sp1rit"
+      ],
       "negations": {
-        "standard": 0, "slash": 0, "strike": 0, "pierce": 0,
-        "magic": 20, "fire": -20, "lightning": 20, "holy": 40
+        "standard": 0,
+        "slash": 0,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 20,
+        "fire": -20,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Ancient Dragon": {
       "type": "field_boss",
-      "names": ["Ancient Dragon"],
-      "ocr_spellings": ["Anc1ent Dragon", "Ancient Oragon"],
+      "names": [
+        "Ancient Dragon"
+      ],
+      "ocr_spellings": [
+        "Anc1ent Dragon",
+        "Ancient Oragon"
+      ],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 10,
-        "magic": 40, "fire": 40, "lightning": 80, "holy": 40
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 10,
+        "magic": 40,
+        "fire": 40,
+        "lightning": 80,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Banished Knights": {
       "type": "field_boss",
-      "names": ["Banished Knights"],
-      "ocr_spellings": ["Ban1shed Knights", "Banished Kn1ghts"],
+      "names": [
+        "Banished Knights"
+      ],
+      "ocr_spellings": [
+        "Ban1shed Knights",
+        "Banished Kn1ghts"
+      ],
       "negations": {
-        "standard": 10, "slash": 35, "strike": 10, "pierce": 0,
-        "magic": 20, "fire": 20, "lightning": -20, "holy": 20
+        "standard": 10,
+        "slash": 35,
+        "strike": 10,
+        "pierce": 0,
+        "magic": 20,
+        "fire": 20,
+        "lightning": -20,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Beastmen of Farum Azula": {
       "type": "field_boss",
-      "names": ["Beastmen of Farum Azula"],
-      "ocr_spellings": ["Beastmen of Farum Azu1a", "Beastmen of Farurn Azula"],
+      "names": [
+        "Beastmen of Farum Azula"
+      ],
+      "ocr_spellings": [
+        "Beastmen of Farum Azu1a",
+        "Beastmen of Farurn Azula"
+      ],
       "negations": {
-        "standard": 0, "slash": 0, "strike": -10, "pierce": 0,
-        "magic": 0, "fire": -20, "lightning": 20, "holy": 0
+        "standard": 0,
+        "slash": 0,
+        "strike": -10,
+        "pierce": 0,
+        "magic": 0,
+        "fire": -20,
+        "lightning": 20,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          84,
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Bloodhound Knight": {
       "type": "field_boss",
-      "names": ["Bloodhound Knight"],
-      "ocr_spellings": ["B1oodhound Knight", "Bloodhound Kn1ght"],
+      "names": [
+        "Bloodhound Knight"
+      ],
+      "ocr_spellings": [
+        "B1oodhound Knight",
+        "Bloodhound Kn1ght"
+      ],
       "negations": {
-        "standard": 10, "slash": 10, "strike": 10, "pierce": 0,
-        "magic": 0, "fire": 0, "lightning": -20, "holy": 0
+        "standard": 10,
+        "slash": 10,
+        "strike": 10,
+        "pierce": 0,
+        "magic": 0,
+        "fire": 0,
+        "lightning": -20,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Crucible Knight": {
       "type": "field_boss",
-      "names": ["Crucible Knight"],
-      "ocr_spellings": ["Cruc1ble Knight", "Crucible Kn1ght"],
+      "names": [
+        "Crucible Knight"
+      ],
+      "ocr_spellings": [
+        "Cruc1ble Knight",
+        "Crucible Kn1ght"
+      ],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 35,
-        "magic": 40, "fire": 20, "lightning": 20, "holy": 40
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 35,
+        "magic": 40,
+        "fire": 20,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": "immune",
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Crucible Knight Ordovis": {
       "type": "field_boss",
-      "names": ["Crucible Knight Ordovis"],
+      "names": [
+        "Crucible Knight Ordovis"
+      ],
       "ocr_spellings": [],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 35,
-        "magic": 40, "fire": 20, "lightning": 20, "holy": 40
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 35,
+        "magic": 40,
+        "fire": 20,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": "immune",
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Crucible Knight Siluria": {
       "type": "field_boss",
-      "names": ["Crucible Knight Siluria"],
+      "names": [
+        "Crucible Knight Siluria"
+      ],
       "ocr_spellings": [],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 35,
-        "magic": 40, "fire": 20, "lightning": 20, "holy": 40
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 35,
+        "magic": 40,
+        "fire": 20,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": "immune",
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Crystalians": {
       "type": "field_boss",
-      "names": ["Crystalians"],
-      "ocr_spellings": ["Crysta1ians", "Crystal1ans"],
+      "names": [
+        "Crystalians"
+      ],
+      "ocr_spellings": [
+        "Crysta1ians",
+        "Crystal1ans"
+      ],
       "negations": {
-        "standard": 10, "slash": 35, "strike": 10, "pierce": 35,
-        "magic": 40, "fire": 40, "lightning": 40, "holy": 40
+        "standard": 10,
+        "slash": 35,
+        "strike": 10,
+        "pierce": 35,
+        "magic": 40,
+        "fire": 40,
+        "lightning": 40,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": "immune",
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Dragonkin Soldier": {
       "type": "field_boss",
-      "names": ["Dragonkin Soldier"],
-      "ocr_spellings": ["Dragon1in Soldier", "Dragonkin So1dier", "Dragonk1n Soldier"],
+      "names": [
+        "Dragonkin Soldier"
+      ],
+      "ocr_spellings": [
+        "Dragon1in Soldier",
+        "Dragonkin So1dier",
+        "Dragonk1n Soldier"
+      ],
       "negations": {
-        "standard": 10, "slash": 0, "strike": 10, "pierce": 10,
-        "magic": 20, "fire": 20, "lightning": 40, "holy": 20
+        "standard": 10,
+        "slash": 0,
+        "strike": 10,
+        "pierce": 10,
+        "magic": 20,
+        "fire": 20,
+        "lightning": 40,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Godskin Apostle": {
       "type": "field_boss",
-      "names": ["Godskin Apostle"],
-      "ocr_spellings": ["Godskin Apost1e", "Godsk1n Apostle"],
+      "names": [
+        "Godskin Apostle"
+      ],
+      "ocr_spellings": [
+        "Godskin Apost1e",
+        "Godsk1n Apostle"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 10, "pierce": 0,
-        "magic": 20, "fire": 40, "lightning": 20, "holy": 40
+        "standard": 0,
+        "slash": -10,
+        "strike": 10,
+        "pierce": 0,
+        "magic": 20,
+        "fire": 40,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Godskin Noble": {
       "type": "field_boss",
-      "names": ["Godskin Noble"],
-      "ocr_spellings": ["Godskin Nob1e", "Godsk1n Noble"],
+      "names": [
+        "Godskin Noble"
+      ],
+      "ocr_spellings": [
+        "Godskin Nob1e",
+        "Godsk1n Noble"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 35, "pierce": 0,
-        "magic": 20, "fire": 40, "lightning": 20, "holy": 40
+        "standard": 0,
+        "slash": -10,
+        "strike": 35,
+        "pierce": 0,
+        "magic": 20,
+        "fire": 40,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Godskin Noble & Apostle": {
       "type": "field_boss",
-      "names": ["Godskin Noble & Apostle"],
-      "ocr_spellings": ["Godskin Noble & Apost1e", "Godsk1n Noble & Apostle"],
+      "names": [
+        "Godskin Noble & Apostle"
+      ],
+      "ocr_spellings": [
+        "Godskin Noble & Apost1e",
+        "Godsk1n Noble & Apostle"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 20, "pierce": 0,
-        "magic": 20, "fire": 40, "lightning": 20, "holy": 40
+        "standard": 0,
+        "slash": -10,
+        "strike": 20,
+        "pierce": 0,
+        "magic": 20,
+        "fire": 40,
+        "lightning": 20,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Grave Warden Duelist": {
       "type": "field_boss",
-      "names": ["Grave Warden Duelist"],
-      "ocr_spellings": ["Grave Warden Due1ist", "Grave Warden Duel1st"],
+      "names": [
+        "Grave Warden Duelist"
+      ],
+      "ocr_spellings": [
+        "Grave Warden Due1ist",
+        "Grave Warden Duel1st"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": 0, "lightning": 0, "holy": 0
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": 0,
+        "lightning": 0,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          84,
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Nox Warriors": {
       "type": "field_boss",
-      "names": ["Nox Warriors"],
-      "ocr_spellings": ["Nox Warr1ors"],
+      "names": [
+        "Nox Warriors"
+      ],
+      "ocr_spellings": [
+        "Nox Warr1ors"
+      ],
       "negations": {
-        "standard": 0, "slash": 0, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": 0, "lightning": 0, "holy": 0
+        "standard": 0,
+        "slash": 0,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": 0,
+        "lightning": 0,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Omen": {
       "type": "field_boss",
-      "names": ["Omen"],
-      "ocr_spellings": ["Ornon", "0men"],
+      "names": [
+        "Omen"
+      ],
+      "ocr_spellings": [
+        "Ornon",
+        "0men"
+      ],
       "negations": {
-        "standard": 0, "slash": -10, "strike": 0, "pierce": 0,
-        "magic": 0, "fire": 0, "lightning": 0, "holy": 20
+        "standard": 0,
+        "slash": -10,
+        "strike": 0,
+        "pierce": 0,
+        "magic": 0,
+        "fire": 0,
+        "lightning": 0,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Beastly Brigade": {
       "type": "field_boss",
-      "names": ["Beastly Brigade"],
-      "ocr_spellings": ["Beast1y Brigade", "Beastly Br1gade"],
+      "names": [
+        "Beastly Brigade"
+      ],
+      "ocr_spellings": [
+        "Beast1y Brigade",
+        "Beastly Br1gade"
+      ],
       "negations": {
-        "standard": 0, "slash": 0, "strike": -10, "pierce": 0,
-        "magic": 0, "fire": -20, "lightning": 20, "holy": 0
+        "standard": 0,
+        "slash": 0,
+        "strike": -10,
+        "pierce": 0,
+        "magic": 0,
+        "fire": -20,
+        "lightning": 20,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Stoneskin Lords": {
       "type": "field_boss",
-      "names": ["Stoneskin Lords"],
-      "ocr_spellings": ["Stonesk1n Lords"],
+      "names": [
+        "Stoneskin Lords"
+      ],
+      "ocr_spellings": [
+        "Stonesk1n Lords"
+      ],
       "negations": {
-        "standard": 10, "slash": 35, "strike": 10, "pierce": 35,
-        "magic": 40, "fire": 40, "lightning": 40, "holy": 40
+        "standard": 10,
+        "slash": 35,
+        "strike": 10,
+        "pierce": 35,
+        "magic": 40,
+        "fire": 40,
+        "lightning": 40,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "frostbite": "immune",
+        "sleep": [
+          112,
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Blackgaol Knight": {
       "type": "field_boss",
-      "names": ["Blackgaol Knight"],
-      "ocr_spellings": ["B1ackgaol Knight", "Blackgaol Kn1ght", "Blackgao1 Knight"],
+      "names": [
+        "Blackgaol Knight"
+      ],
+      "ocr_spellings": [
+        "B1ackgaol Knight",
+        "Blackgaol Kn1ght",
+        "Blackgao1 Knight"
+      ],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 35,
-        "magic": 25, "fire": 30, "lightning": 25, "holy": 25
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 35,
+        "magic": 25,
+        "fire": 30,
+        "lightning": 25,
+        "holy": 25
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "madness": "immune"
+      }
     },
     "Valiant Gargoyle": {
       "type": "field_boss",
-      "names": ["Valiant Gargoyle"],
-      "ocr_spellings": ["Va1iant Gargoyle", "Valiant Gargoy1e"],
+      "names": [
+        "Valiant Gargoyle"
+      ],
+      "ocr_spellings": [
+        "Va1iant Gargoyle",
+        "Valiant Gargoy1e"
+      ],
       "negations": {
-        "standard": 10, "slash": 35, "strike": 0, "pierce": 35,
-        "magic": 20, "fire": 40, "lightning": 40, "holy": 40
+        "standard": 10,
+        "slash": 35,
+        "strike": 0,
+        "pierce": 35,
+        "magic": 20,
+        "fire": 40,
+        "lightning": 40,
+        "holy": 40
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": "immune",
+        "scarlet_rot": "immune",
+        "blood_loss": "immune",
+        "frostbite": "immune",
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Fallingstar Beast": {
       "type": "field_boss",
-      "names": ["Fallingstar Beast"],
-      "ocr_spellings": ["Fa1lingstar Beast", "Fallingstar 8east", "Fall1ngstar Beast"],
+      "names": [
+        "Fallingstar Beast"
+      ],
+      "ocr_spellings": [
+        "Fa1lingstar Beast",
+        "Fallingstar 8east",
+        "Fall1ngstar Beast"
+      ],
       "negations": {
-        "standard": 35, "slash": 35, "strike": 35, "pierce": 35,
-        "magic": 20, "fire": 20, "lightning": 20, "holy": 20
+        "standard": 35,
+        "slash": 35,
+        "strike": 35,
+        "pierce": 35,
+        "magic": 20,
+        "fire": 20,
+        "lightning": 20,
+        "holy": 20
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": "immune",
+        "frostbite": "immune",
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Black Blade Kindred": {
       "type": "field_boss",
-      "names": ["Black Blade Kindred", "Blackblade Kindred"],
-      "ocr_spellings": ["Black B1ade Kindred", "Black Blade K1ndred", "Blackb1ade Kindred", "Blackblade K1ndred"],
+      "names": [
+        "Black Blade Kindred",
+        "Blackblade Kindred"
+      ],
+      "ocr_spellings": [
+        "Black B1ade Kindred",
+        "Black Blade K1ndred",
+        "Blackb1ade Kindred",
+        "Blackblade K1ndred"
+      ],
       "negations": {
-        "standard": 10, "slash": 35, "strike": 0, "pierce": 35,
-        "magic": 20, "fire": 40, "lightning": 40, "holy": 80
+        "standard": 10,
+        "slash": 35,
+        "strike": 0,
+        "pierce": 35,
+        "magic": 20,
+        "fire": 40,
+        "lightning": 40,
+        "holy": 80
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": "immune",
+        "scarlet_rot": "immune",
+        "blood_loss": "immune",
+        "frostbite": "immune",
+        "sleep": "immune",
+        "madness": "immune"
+      }
     },
     "Nameless King": {
       "type": "field_boss",
-      "names": ["Nameless King"],
-      "ocr_spellings": ["Name1ess King", "Nameless K1ng"],
+      "names": [
+        "Nameless King"
+      ],
+      "ocr_spellings": [
+        "Name1ess King",
+        "Nameless K1ng"
+      ],
       "negations": {
-        "standard": 20, "slash": 21, "strike": 18, "pierce": 2,
-        "magic": 10, "fire": 35, "lightning": -31, "holy": 0
+        "standard": 20,
+        "slash": 21,
+        "strike": 18,
+        "pierce": 2,
+        "magic": 10,
+        "fire": 35,
+        "lightning": -31,
+        "holy": 0
       },
-      "status_resistances": {}
+      "status_resistances": {
+        "poison": [
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          252,
+          542,
+          999
+        ],
+        "blood_loss": [
+          252,
+          542,
+          999
+        ],
+        "frostbite": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
     }
   }
 }
