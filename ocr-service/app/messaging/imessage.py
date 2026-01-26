@@ -115,31 +115,33 @@ def format_boss_message(
             continue
         short_name = abbrev.get(damage_type, damage_type[:3].capitalize())
         if value < 0:
-            weaknesses.append(f"{short_name}: {value}%")
+            # Store as tuple (value, formatted string) for sorting
+            weaknesses.append((value, f"{short_name}: {value}%"))
         else:
-            strengths.append(f"{short_name}: +{value}%")
+            strengths.append((value, f"{short_name}: +{value}%"))
 
-    # Format damage negations in two columns (weakness | strength)
-    if weaknesses or strengths:
-        # Pair up weaknesses and strengths side by side
-        max_rows = max(len(weaknesses), len(strengths))
-        for i in range(max_rows):
-            weak_part = weaknesses[i] if i < len(weaknesses) else ""
-            strong_part = strengths[i] if i < len(strengths) else ""
+    # Sort weaknesses by value (most negative first)
+    weaknesses.sort(key=lambda x: x[0])
+    # Sort strengths by value (highest first)
+    strengths.sort(key=lambda x: -x[0])
 
-            if weak_part and strong_part:
-                # Pad weakness to fixed width for alignment
-                lines.append(f"{weak_part:<12} {strong_part}")
-            elif weak_part:
-                lines.append(weak_part)
-            elif strong_part:
-                lines.append(f"{'':<12} {strong_part}")
+    # Format weaknesses section
+    if weaknesses:
+        lines.append("✅ Leverage Weakness:")
+        for i, (_, text) in enumerate(weaknesses, 1):
+            lines.append(f"#{i} {text}")
+        lines.append("")
 
+    # Format resistances section
+    if strengths:
+        lines.append("❌ Avoid Resistances:")
+        for _, text in strengths:
+            lines.append(text)
         lines.append("")
 
     # Status resistances
     # Default values for reference: [154, 252, 542, 999]
-    status_abbrev = {
+    status_names = {
         "poison": "Poison",
         "scarlet_rot": "Rot",
         "blood_loss": "Blood",
@@ -150,10 +152,9 @@ def format_boss_message(
 
     immune = []
     strong = []
-    weak = []
 
     for status, value in status_resistances.items():
-        name = status_abbrev.get(status, status)
+        name = status_names.get(status, status)
 
         if value == "immune":
             immune.append(name)
@@ -161,16 +162,22 @@ def format_boss_message(
             # Check if it differs from default [154, 252, 542, 999]
             if len(value) == 4 and value[0] == 154:
                 continue  # Default - don't show
-            elif value[0] < 154:
-                weak.append(name)
             elif len(value) < 4:
                 strong.append(name)
 
     if immune:
-        lines.append(f"Immune: {', '.join(immune)}")
+        lines.append("‼️Immune:")
+        for name in immune:
+            lines.append(name)
+        lines.append("")
+
     if strong:
-        lines.append(f"Strong: {', '.join(strong)}")
-    if weak:
-        lines.append(f"Weak: {', '.join(weak)}")
+        lines.append("⚠️ Strong Against:")
+        for name in strong:
+            lines.append(name)
+
+    # Remove trailing empty line if present
+    while lines and lines[-1] == "":
+        lines.pop()
 
     return "\n".join(lines)
