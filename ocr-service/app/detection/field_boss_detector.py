@@ -20,7 +20,7 @@ FIELD_BOSS_DATA = {
         "negations": {"standard": 10, "slash": 10, "strike": 10, "pierce": 0, "magic": 0, "fire": -20, "lightning": -20, "holy": 0}
     },
     "Bell Bearing Hunter": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": -10, "magic": 40, "fire": 40, "lightning": 20, "holy": 40}
+        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 10, "magic": 40, "fire": 40, "lightning": 20, "holy": 40}
     },
     "Black Knife Assassin": {
         "negations": {"standard": 10, "slash": 10, "strike": 10, "pierce": 35, "magic": 20, "fire": 20, "lightning": 20, "holy": 40}
