@@ -11,10 +11,10 @@
     "lint:security": "eslint . --ext .ts,.tsx --config .eslintrc.security.json",
     "sync:pages": "node scripts/sync-public-to-docs.mjs",
     "generate:seo": "node scripts/generate-seo-files.mjs",
-    "ocr": "cd ocr-service && OCR_DEFAULT_MONITOR=${npm_config_monitor:-1} ./venv/bin/python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
-    "ocr:1": "npm run ocr --monitor=1",
-    "ocr:2": "npm run ocr --monitor=2",
-    "ocr:3": "npm run ocr --monitor=3",
+    "ocr": "cd ocr-service && OCR_DEFAULT_MONITOR=1 ./venv/bin/python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "ocr:1": "cd ocr-service && OCR_DEFAULT_MONITOR=1 ./venv/bin/python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "ocr:2": "cd ocr-service && OCR_DEFAULT_MONITOR=2 ./venv/bin/python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "ocr:3": "cd ocr-service && OCR_DEFAULT_MONITOR=3 ./venv/bin/python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
     "identify": "cd ocr-service && ./venv/bin/python identify_monitors.py"
   },
   "dependencies": {

@@ -263,9 +263,9 @@ async def capture_monitor(monitor_index: int = None, debug: bool = False):
             debug_dir.mkdir(exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-            # Save original (unannotated) capture
+            # Save original full-screen capture
             original_path = debug_dir / f"capture_{timestamp}_original.jpg"
-            cv2.imwrite(str(original_path), map_region)
+            cv2.imwrite(str(original_path), frame)
 
             # Save annotated debug capture
             debug_path = debug_dir / f"capture_{timestamp}.jpg"
