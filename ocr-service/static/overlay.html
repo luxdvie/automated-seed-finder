@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Stream Overlay</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 1920px;
+            height: 1080px;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: transparent;
+            color: #fff;
+        }
+
+        /* Boss weaknesses - top right */
+        .boss-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 10px 14px;
+            border-left: 3px solid #ffd700;
+            min-width: 140px;
+        }
+
+        .boss-panel.hidden {
+            display: none;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            padding: 2px 0;
+        }
+
+        .label {
+            color: #999;
+            margin-right: 12px;
+        }
+
+        .value {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .weak { color: #4ade80; }
+        .resist { color: #f87171; }
+
+        .section {
+            margin-bottom: 6px;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .hidden { display: none; }
+
+        /* Damage type colors */
+        .fire { color: #ff6b35; }
+        .lightning { color: #fbbf24; }
+        .magic { color: #60a5fa; }
+        .holy { color: #fef08a; }
+
+        /* Future panels can go here */
+        /* .spawn-panel { position: absolute; bottom: 20px; left: 20px; } */
+        /* .shifting-earth-panel { position: absolute; top: 20px; left: 20px; } */
+    </style>
+</head>
+<body>
+    <!-- Boss Weaknesses Panel - Top Right -->
+    <div id="bossPanel" class="boss-panel hidden">
+        <div id="weakSection" class="section">
+            <div class="section-title">Weak</div>
+            <div id="weakList"></div>
+        </div>
+        <div id="resistSection" class="section">
+            <div class="section-title">Resist</div>
+            <div id="resistList"></div>
+        </div>
+    </div>
+
+    <script>
+        const BOSS_DATA = {
+            "1_Gladius": {
+                negations: { standard: 0, slash: 0, strike: 0, pierce: -10, magic: 0, fire: 50, lightning: 0, holy: -35 }
+            },
+            "2_Adel": {
+                negations: { standard: 0, slash: 0, strike: -20, pierce: 0, magic: -10, fire: 10, lightning: -25, holy: 0 }
+            },
+            "3_Gnoster": {
+                negations: { standard: 0, slash: 0, strike: 0, pierce: -10, magic: 30, fire: -30, lightning: 20, holy: -20 }
+            },
+            "4_Maris": {
+                negations: { standard: 0, slash: -15, strike: 20, pierce: 10, magic: 20, fire: 50, lightning: -40, holy: 15 }
+            },
+            "5_Libra": {
+                negations: { standard: 0, slash: 10, strike: 0, pierce: -20, magic: -15, fire: 0, lightning: 20, holy: -25 }
+            },
+            "6_Fulghor": {
+                negations: { standard: 0, slash: 0, strike: -15, pierce: 0, magic: -20, fire: 30, lightning: 50, holy: -10 }
+            },
+            "7_Caligo": {
+                negations: { standard: 0, slash: -10, strike: 0, pierce: 0, magic: 0, fire: -35, lightning: 10, holy: -20 }
+            },
+            "8_Heolstor": {
+                negations: { standard: 0, slash: 0, strike: 0, pierce: 0, magic: 0, fire: -15, lightning: -15, holy: -25 }
+            },
+            "9_Balancers": {
+                negations: { standard: 0, slash: 0, strike: 0, pierce: 0, magic: -10, fire: -10, lightning: -10, holy: -10 }
+            },
+            "10_Greg": {
+                negations: { standard: 0, slash: -10, strike: 0, pierce: -10, magic: 0, fire: -20, lightning: 10, holy: -25 }
+            }
+        };
+
+        const LABELS = {
+            standard: "Std", slash: "Sla", strike: "Str", pierce: "Prc",
+            magic: "Mag", fire: "Fire", lightning: "Ltng", holy: "Holy"
+        };
+
+        const CLASSES = {
+            fire: "fire", lightning: "lightning", magic: "magic", holy: "holy"
+        };
+
+        let currentBoss = null;
+        let ws = null;
+
+        function renderBoss(bossId) {
+            const boss = BOSS_DATA[bossId];
+            const panel = document.getElementById('bossPanel');
+
+            if (!boss) {
+                panel.classList.add('hidden');
+                currentBoss = null;
+                return;
+            }
+
+            panel.classList.remove('hidden');
+
+            const weaknesses = [];
+            const resistances = [];
+
+            for (const [type, val] of Object.entries(boss.negations)) {
+                if (val < 0) weaknesses.push({ type, val });
+                else if (val > 0) resistances.push({ type, val });
+            }
+
+            weaknesses.sort((a, b) => a.val - b.val);
+            resistances.sort((a, b) => b.val - a.val);
+
+            const weakEl = document.getElementById('weakList');
+            const weakSection = document.getElementById('weakSection');
+            if (weaknesses.length === 0) {
+                weakSection.classList.add('hidden');
+            } else {
+                weakSection.classList.remove('hidden');
+                weakEl.innerHTML = weaknesses.slice(0, 4).map(w => `
+                    <div class="row">
+                        <span class="label ${CLASSES[w.type] || ''}">${LABELS[w.type]}</span>
+                        <span class="value weak">${w.val}</span>
+                    </div>
+                `).join('');
+            }
+
+            const resistEl = document.getElementById('resistList');
+            const resistSection = document.getElementById('resistSection');
+            if (resistances.length === 0) {
+                resistSection.classList.add('hidden');
+            } else {
+                resistSection.classList.remove('hidden');
+                resistEl.innerHTML = resistances.slice(0, 3).map(r => `
+                    <div class="row">
+                        <span class="label ${CLASSES[r.type] || ''}">${LABELS[r.type]}</span>
+                        <span class="value resist">+${r.val}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function hideBoss() {
+            document.getElementById('bossPanel').classList.add('hidden');
+            currentBoss = null;
+        }
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/overlay`;
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'detection') {
+                        // Update boss panel
+                        if (data.nightlord && data.nightlord_confidence > 0.7) {
+                            if (data.nightlord !== currentBoss) {
+                                currentBoss = data.nightlord;
+                                renderBoss(currentBoss);
+                            }
+                        }
+                        // Future: handle shifting_earth, spawn, etc.
+                    }
+                } catch (e) {
+                    console.error('Parse error:', e);
+                }
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket closed, reconnecting...');
+                setTimeout(connectWebSocket, 2000);
+            };
+
+            ws.onerror = (err) => {
+                console.error('WebSocket error:', err);
+            };
+        }
+
+        // URL param to test: ?boss=10_Greg
+        const urlParams = new URLSearchParams(window.location.search);
+        const testBoss = urlParams.get('boss');
+
+        if (testBoss) {
+            renderBoss(testBoss);
+        } else {
+            connectWebSocket();
+        }
+    </script>
+</body>
+</html>

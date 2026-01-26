@@ -36,6 +36,7 @@ poi_detector: Optional[POIDetector] = None
 shifting_earth_detector: Optional[ShiftingEarthDetector] = None
 coordinate_mapper = CoordinateMapper()
 connection_manager = ConnectionManager()
+overlay_manager = ConnectionManager()  # Separate manager for overlay WebSocket clients
 
 
 @asynccontextmanager
@@ -253,6 +254,16 @@ async def capture_monitor(monitor_index: int, debug: bool = False):
             result["debug_image"] = str(debug_path)
     except Exception as e:
         logger.warning(f"Failed to save debug image: {e}")
+
+    # Broadcast to overlay WebSocket clients
+    if overlay_manager.connection_count > 0:
+        await overlay_manager.broadcast({
+            "type": "detection",
+            "nightlord": result.get("nightlord"),
+            "nightlord_confidence": result.get("nightlord_confidence", 0),
+            "shifting_earth": result.get("shifting_earth"),
+            "shifting_earth_confidence": result.get("shifting_earth_confidence", 0),
+        })
 
     return result
 
@@ -840,6 +851,49 @@ async def calibrate_page():
 
     with open(html_file, 'r') as f:
         return HTMLResponse(content=f.read())
+
+
+@app.get("/overlay")
+async def overlay_page():
+    """Serve the OBS overlay page for boss weaknesses.
+
+    URL params:
+        monitor: Monitor index to poll (default: 2)
+        poll: Poll interval in ms (default: 2000)
+        boss: Show specific boss for testing (e.g., ?boss=10_Greg)
+
+    Add this URL as a Browser Source in OBS:
+        http://localhost:8000/overlay?monitor=2
+    """
+    static_dir = Path(__file__).parent.parent / "static"
+    html_file = static_dir / "overlay.html"
+
+    if not html_file.exists():
+        raise HTTPException(status_code=404, detail="Overlay page not found")
+
+    with open(html_file, 'r') as f:
+        return HTMLResponse(content=f.read())
+
+
+@app.websocket("/ws/overlay")
+async def overlay_websocket(websocket: WebSocket):
+    """WebSocket endpoint for real-time overlay updates.
+
+    Overlay clients connect here to receive detection broadcasts.
+    """
+    await overlay_manager.connect(websocket)
+    logger.info(f"Overlay client connected. Total: {overlay_manager.connection_count}")
+
+    try:
+        while True:
+            # Keep connection alive, wait for disconnect
+            data = await websocket.receive_text()
+            # Could handle ping/pong here if needed
+    except Exception:
+        pass
+    finally:
+        await overlay_manager.disconnect(websocket)
+        logger.info(f"Overlay client disconnected. Total: {overlay_manager.connection_count}")
 
 
 @app.get("/calibration/capture/{monitor_index}")
