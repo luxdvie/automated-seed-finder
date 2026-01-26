@@ -31,11 +31,15 @@ def _build_field_boss_data(bosses_json: dict) -> dict:
     """Build FIELD_BOSS_DATA dict from bosses.json structure."""
     field_boss_data = {}
     for boss_key, boss_info in bosses_json.get("field_bosses", {}).items():
-        field_boss_data[boss_key] = {"negations": boss_info["negations"]}
+        boss_entry = {
+            "negations": boss_info["negations"],
+            "status_resistances": boss_info.get("status_resistances", {})
+        }
+        field_boss_data[boss_key] = boss_entry
         # Also add alternate names as keys pointing to the same data
         for alt_name in boss_info.get("names", []):
             if alt_name != boss_key:
-                field_boss_data[alt_name] = {"negations": boss_info["negations"]}
+                field_boss_data[alt_name] = boss_entry
     return field_boss_data
 
 
@@ -283,7 +287,8 @@ class FieldBossDetector:
             "boss_name": boss_name,
             "raw_text": raw_text,
             "confidence": confidence,
-            "negations": boss_data["negations"]
+            "negations": boss_data["negations"],
+            "status_resistances": boss_data.get("status_resistances", {})
         }
 
     @staticmethod

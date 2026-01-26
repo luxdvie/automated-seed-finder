@@ -19,6 +19,7 @@ from .config import settings, NIGHTLORD_MAPPING, NIGHTLORD_COORDINATE
 from .capture import VideoCapture, FrameProcessor, screen_capture
 from .detection import BossDetector, SpawnDetector, POIDetector, CoordinateMapper, ShiftingEarthDetector, FieldBossDetector
 from .websocket import ConnectionManager
+from .messaging.imessage import send_to_multiple, format_boss_message
 
 # Configure logging
 logging.basicConfig(
@@ -38,6 +39,10 @@ field_boss_detector = FieldBossDetector()
 coordinate_mapper = CoordinateMapper()
 connection_manager = ConnectionManager()
 overlay_manager = ConnectionManager()  # Separate manager for overlay WebSocket clients
+
+# Track last detected bosses for "send current" functionality
+last_detected_nightlord: Optional[str] = None
+last_detected_field_boss: Optional[str] = None
 
 
 @asynccontextmanager
@@ -86,6 +91,17 @@ app.add_middleware(
 
 # Calibration config path
 CALIBRATION_FILE = Path(__file__).parent.parent / "calibration.json"
+
+# SMS config path
+SMS_CONFIG_FILE = Path(__file__).parent.parent / "sms_config.json"
+
+
+def load_sms_config() -> dict:
+    """Load SMS/iMessage config from file."""
+    if SMS_CONFIG_FILE.exists():
+        with open(SMS_CONFIG_FILE, 'r') as f:
+            return json.load(f)
+    return {"enabled": False, "recipients": []}
 
 
 def load_calibration_config() -> dict:
@@ -165,17 +181,19 @@ async def get_default_monitor():
 
 @app.get("/capture-monitor")
 @app.get("/capture-monitor/{monitor_index}")
-async def capture_monitor(monitor_index: int = None, debug: bool = False):
+async def capture_monitor(monitor_index: int = None, debug: bool = False, sms: bool = False):
     """Capture a monitor screenshot and analyze it.
 
     Args:
         monitor_index: Monitor to capture (1 = first monitor, 2 = second, etc.)
                       If not provided, uses the configured default_monitor.
         debug: If true, also save debug images
+        sms: If true, send nightlord info via iMessage when detected
 
     This endpoint can be triggered by Stream Deck, curl, or any HTTP client:
         curl http://localhost:8000/capture-monitor
         curl http://localhost:8000/capture-monitor/2
+        curl http://localhost:8000/capture-monitor?sms=true
     """
     from datetime import datetime
     from pathlib import Path
@@ -284,12 +302,40 @@ async def capture_monitor(monitor_index: int = None, debug: bool = False):
             "shifting_earth_confidence": result.get("shifting_earth_confidence", 0),
         })
 
+    # Track last detected nightlord for "send current" functionality
+    global last_detected_nightlord
+    if result.get("nightlord"):
+        last_detected_nightlord = result["nightlord"]
+        logger.info(f"Tracking last nightlord: {last_detected_nightlord}")
+
+    # Send SMS if requested and nightlord detected
+    if sms and result.get("nightlord"):
+        sms_config = load_sms_config()
+        if sms_config.get("enabled") and sms_config.get("recipients"):
+            from .detection.field_boss_detector import get_all_boss_data
+            boss_data = get_all_boss_data()
+            nightlord_id = result["nightlord"]
+            nightlord_info = boss_data.get("nightlords", {}).get(nightlord_id)
+
+            if nightlord_info:
+                boss_name = nightlord_info["names"][0] if nightlord_info.get("names") else nightlord_id
+                message = format_boss_message(
+                    boss_name=boss_name,
+                    negations=nightlord_info.get("negations", {}),
+                    status_resistances=nightlord_info.get("status_resistances", {}),
+                    is_nightlord=True
+                )
+                sms_result = send_to_multiple(sms_config["recipients"], message)
+                result["sms_sent"] = len(sms_result["success"])
+                result["sms_failed"] = len(sms_result["failed"])
+                logger.info(f"SMS sent for {nightlord_id}: {len(sms_result['success'])} success")
+
     return result
 
 
 @app.get("/capture-field-boss")
 @app.get("/capture-field-boss/{monitor_index}")
-async def capture_field_boss(monitor_index: int = None):
+async def capture_field_boss(monitor_index: int = None, sms: bool = False):
     """Capture screen and detect field boss using OCR.
 
     Reads the boss name from the calibrated 'field_boss_name' region using OCR,
@@ -297,9 +343,11 @@ async def capture_field_boss(monitor_index: int = None):
 
     Args:
         monitor_index: Monitor to capture. If not provided, uses configured default.
+        sms: If true, send field boss info via iMessage when detected
 
     Trigger from Stream Deck:
         curl http://10.0.0.91:8000/capture-field-boss
+        curl http://10.0.0.91:8000/capture-field-boss?sms=true
     """
     if monitor_index is None:
         monitor_index = settings.default_monitor
@@ -376,7 +424,12 @@ async def capture_field_boss(monitor_index: int = None):
                 "confidence": result["confidence"]
             })
 
-        return {
+        # Track last detected field boss for "send current" functionality
+        global last_detected_field_boss
+        last_detected_field_boss = result["boss_name"]
+        logger.info(f"Tracking last field boss: {last_detected_field_boss}")
+
+        response = {
             "detected": True,
             "boss_name": result["boss_name"],
             "raw_text": result["raw_text"],
@@ -385,6 +438,23 @@ async def capture_field_boss(monitor_index: int = None):
             "debug_original": str(original_path),
             "debug_annotated": str(annotated_path)
         }
+
+        # Send SMS if requested
+        if sms:
+            sms_config = load_sms_config()
+            if sms_config.get("enabled") and sms_config.get("recipients"):
+                message = format_boss_message(
+                    boss_name=result["boss_name"],
+                    negations=result["negations"],
+                    status_resistances=result.get("status_resistances", {}),
+                    is_nightlord=False
+                )
+                sms_result = send_to_multiple(sms_config["recipients"], message)
+                response["sms_sent"] = len(sms_result["success"])
+                response["sms_failed"] = len(sms_result["failed"])
+                logger.info(f"SMS sent for field boss {result['boss_name']}: {len(sms_result['success'])} success")
+
+        return response
     else:
         # Broadcast error to overlay (shows red X for 3 seconds)
         if overlay_manager.connection_count > 0:
@@ -1078,6 +1148,10 @@ async def overlay_command(command: str, boss: Optional[str] = None, fieldBoss: O
     message = {"type": "command", "command": command}
     if boss:
         message["boss"] = boss
+        # Track for "send current" functionality
+        global last_detected_nightlord
+        last_detected_nightlord = boss
+        logger.info(f"Tracking last nightlord (via showBoss): {boss}")
     if fieldBoss:
         # Look up field boss data
         from .detection.field_boss_detector import FIELD_BOSS_DATA
@@ -1086,11 +1160,198 @@ async def overlay_command(command: str, boss: Optional[str] = None, fieldBoss: O
             return {"error": f"Unknown field boss: {fieldBoss}", "known_bosses": list(FIELD_BOSS_DATA.keys())}
         message["fieldBoss"] = fieldBoss
         message["negations"] = boss_data["negations"]
+        # Track for "send current" functionality
+        global last_detected_field_boss
+        last_detected_field_boss = fieldBoss
+        logger.info(f"Tracking last field boss (via showFieldBoss): {fieldBoss}")
 
     await overlay_manager.broadcast(message)
 
     logger.info(f"Overlay command sent: {command}" + (f" boss={boss}" if boss else "") + (f" fieldBoss={fieldBoss}" if fieldBoss else ""))
     return {"status": "ok", "command": command, "boss": boss, "fieldBoss": fieldBoss, "clients": overlay_manager.connection_count}
+
+
+# =============================================================================
+# iMESSAGE / SMS ENDPOINTS
+# =============================================================================
+
+@app.get("/send-nightlord-text")
+@app.get("/send-nightlord-text/{boss_id}")
+async def send_nightlord_text(boss_id: Optional[str] = None):
+    """Send nightlord weaknesses/strengths via iMessage.
+
+    Args:
+        boss_id: Nightlord ID (e.g., "1_Gladius", "10_Greg").
+                 If not provided, sends info for all nightlords (for testing).
+
+    Trigger from Stream Deck:
+        http://10.0.0.91:8000/send-nightlord-text/1_Gladius
+
+    Configure recipients in sms_config.json
+    """
+    from .detection.field_boss_detector import get_all_boss_data
+
+    # Load SMS config
+    sms_config = load_sms_config()
+    if not sms_config.get("enabled", False):
+        return {"error": "SMS disabled", "hint": "Set enabled: true in sms_config.json"}
+
+    recipients = sms_config.get("recipients", [])
+    if not recipients:
+        return {"error": "No recipients configured", "hint": "Add phone numbers to sms_config.json"}
+
+    # Get boss data
+    boss_data = get_all_boss_data()
+    nightlords = boss_data.get("nightlords", {})
+
+    if not boss_id:
+        return {
+            "error": "boss_id required",
+            "available_bosses": list(nightlords.keys()),
+            "example": "/send-nightlord-text/1_Gladius"
+        }
+
+    if boss_id not in nightlords:
+        return {
+            "error": f"Unknown boss: {boss_id}",
+            "available_bosses": list(nightlords.keys())
+        }
+
+    # Get boss info
+    boss_info = nightlords[boss_id]
+    boss_name = boss_info["names"][0] if boss_info.get("names") else boss_id
+
+    # Format message
+    message = format_boss_message(
+        boss_name=boss_name,
+        negations=boss_info.get("negations", {}),
+        status_resistances=boss_info.get("status_resistances", {}),
+        is_nightlord=True
+    )
+
+    # Send to all recipients
+    results = send_to_multiple(recipients, message)
+
+    logger.info(f"Nightlord text sent: {boss_id} -> {len(results['success'])} success, {len(results['failed'])} failed")
+
+    return {
+        "status": "ok",
+        "boss_id": boss_id,
+        "boss_name": boss_name,
+        "message_preview": message,
+        "sent_to": results["success"],
+        "failed": results["failed"]
+    }
+
+
+@app.get("/send-field-boss-text")
+@app.get("/send-field-boss-text/{boss_name}")
+async def send_field_boss_text(boss_name: Optional[str] = None):
+    """Send field boss weaknesses/strengths via iMessage.
+
+    Args:
+        boss_name: Field boss name (e.g., "Bell Bearing Hunter").
+
+    Trigger from Stream Deck:
+        http://10.0.0.91:8000/send-field-boss-text/Bell%20Bearing%20Hunter
+
+    Configure recipients in sms_config.json
+    """
+    from .detection.field_boss_detector import get_all_boss_data
+
+    # Load SMS config
+    sms_config = load_sms_config()
+    if not sms_config.get("enabled", False):
+        return {"error": "SMS disabled", "hint": "Set enabled: true in sms_config.json"}
+
+    recipients = sms_config.get("recipients", [])
+    if not recipients:
+        return {"error": "No recipients configured", "hint": "Add phone numbers to sms_config.json"}
+
+    # Get boss data
+    boss_data = get_all_boss_data()
+    field_bosses = boss_data.get("field_bosses", {})
+
+    if not boss_name:
+        return {
+            "error": "boss_name required",
+            "available_bosses": list(field_bosses.keys()),
+            "example": "/send-field-boss-text/Bell%20Bearing%20Hunter"
+        }
+
+    if boss_name not in field_bosses:
+        return {
+            "error": f"Unknown field boss: {boss_name}",
+            "available_bosses": list(field_bosses.keys())
+        }
+
+    # Get boss info
+    boss_info = field_bosses[boss_name]
+
+    # Format message
+    message = format_boss_message(
+        boss_name=boss_name,
+        negations=boss_info.get("negations", {}),
+        status_resistances=boss_info.get("status_resistances", {}),
+        is_nightlord=False
+    )
+
+    # Send to all recipients
+    results = send_to_multiple(recipients, message)
+
+    logger.info(f"Field boss text sent: {boss_name} -> {len(results['success'])} success, {len(results['failed'])} failed")
+
+    return {
+        "status": "ok",
+        "boss_name": boss_name,
+        "message_preview": message,
+        "sent_to": results["success"],
+        "failed": results["failed"]
+    }
+
+
+@app.get("/send-current-nightlord-text")
+async def send_current_nightlord_text():
+    """Send iMessage for the currently displayed nightlord.
+
+    Texts the weaknesses/strengths for whatever nightlord was last detected.
+    Perfect for a single Stream Deck button that always sends the current boss info.
+
+    Trigger from Stream Deck:
+        http://10.0.0.91:8000/send-current-nightlord-text
+    """
+    global last_detected_nightlord
+
+    if not last_detected_nightlord:
+        return {
+            "error": "No nightlord detected yet",
+            "hint": "Detect a nightlord first with /capture-monitor"
+        }
+
+    # Delegate to the existing endpoint
+    return await send_nightlord_text(last_detected_nightlord)
+
+
+@app.get("/send-current-field-boss-text")
+async def send_current_field_boss_text():
+    """Send iMessage for the currently displayed field boss.
+
+    Texts the weaknesses/strengths for whatever field boss was last detected.
+    Perfect for a single Stream Deck button that always sends the current boss info.
+
+    Trigger from Stream Deck:
+        http://10.0.0.91:8000/send-current-field-boss-text
+    """
+    global last_detected_field_boss
+
+    if not last_detected_field_boss:
+        return {
+            "error": "No field boss detected yet",
+            "hint": "Detect a field boss first with /capture-field-boss"
+        }
+
+    # Delegate to the existing endpoint
+    return await send_field_boss_text(last_detected_field_boss)
 
 
 @app.get("/calibration/capture/{monitor_index}")

@@ -2,6 +2,20 @@
 
 Python backend service for video capture and OCR-based seed detection.
 
+This is insane. Probably not needed for 99% of people.
+
+Context: I play on a PS5. I want to use an Elgato Capture Card (4ks) and a Stream Deck and OBS on my Mac to:
+- Automate seed detection (as much as feasible) through OCR
+- Tell me strengths and weaknesses of field bosses and night lords as I play
+- Show me where the circle closes
+
+To facilitate this:
+
+1. Have two or more monitors
+2. Stream PS5 on one monitor, full screen, via OBS
+3. Run both the NextJS app and the OCR app
+4. Use stream deck buttons as you play the game to give you helpful info
+
 ## Setup Guide
 
 - Expected Usage
@@ -37,6 +51,43 @@ Python backend service for video capture and OCR-based seed detection.
 	  - http://127.0.0.1:8000/overlay-command?command=hideFieldBoss (hides just the field boss)
 	  - http://127.0.0.1:8000/overlay-command?command=showFieldBoss&fieldBoss=Blackgaol%20Knight (test field boss overlay)
 	  - http://127.0.0.1:8000/overlay-command?command=showBoss&boss=1_Gladius (test nightlord overlay)
+
+### iMessage Notifications (macOS only)
+
+Send boss weaknesses/strengths to your phone via iMessage during gameplay!
+
+**Setup:**
+1. Edit `ocr-service/sms_config.json`:
+   ```json
+   {
+     "enabled": true,
+     "recipients": ["+15551234567", "+15559876543"]
+   }
+   ```
+2. Add phone numbers in E.164 format (recipients must be reachable via iMessage)
+3. Your Mac's Messages app will send the texts automatically
+
+**Usage via Stream Deck:**
+- Send current boss (whatever is displaying):
+  - `http://127.0.0.1:8000/send-current-nightlord-text` (recommended!)
+  - `http://127.0.0.1:8000/send-current-field-boss-text`
+- Auto-send when boss detected:
+  - `http://127.0.0.1:8000/capture-monitor?sms=true` (nightlord detection + text)
+  - `http://127.0.0.1:8000/capture-field-boss?sms=true` (field boss detection + text)
+- Manual send for specific boss:
+  - `http://127.0.0.1:8000/send-nightlord-text/1_Gladius`
+  - `http://127.0.0.1:8000/send-field-boss-text/Bell%20Bearing%20Hunter`
+
+**Example message:**
+```
+🌙 NIGHTLORD: Gladius
+
+Hol: -35%    Fir: +50%
+Prc: -10%
+
+Immune: Madness
+Strong: Poison, Rot, Blood, Frost
+```
 
 ### Boss Strength/Weakness Updating
 
