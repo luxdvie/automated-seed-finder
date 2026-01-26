@@ -156,37 +156,47 @@
     </div>
 
     <script>
-        // Nightlord data (by app ID)
+        // Nightlord data (by app ID) - Source: eldenringnightreign.wiki.fextralife.com
         const NIGHTLORD_DATA = {
             "1_Gladius": {
+                // Gladius, Beast of Night - weak to Holy/Pierce, resists Fire
                 negations: { standard: 0, slash: 0, strike: 0, pierce: -10, magic: 0, fire: 50, lightning: 0, holy: -35 }
             },
             "2_Adel": {
-                negations: { standard: 0, slash: 0, strike: -20, pierce: 0, magic: -10, fire: 10, lightning: -25, holy: 0 }
+                // Adel, Baron of Night - resists Fire/Lightning (weak to Poison status, not damage type)
+                negations: { standard: 0, slash: 0, strike: 0, pierce: 0, magic: 0, fire: 20, lightning: 50, holy: 0 }
             },
             "3_Gnoster": {
-                negations: { standard: 0, slash: 0, strike: 0, pierce: -10, magic: 30, fire: -30, lightning: 20, holy: -20 }
+                // Gnoster, Wisdom of Night (Moth phase) - weak to Fire/Slash/Pierce, resists Magic
+                negations: { standard: -15, slash: -25, strike: -15, pierce: -25, magic: 50, fire: -40, lightning: 10, holy: 10 }
             },
             "4_Maris": {
+                // Maris, Fathom of Night - weak to Lightning/Slash, resists Fire/Strike
                 negations: { standard: 0, slash: -15, strike: 20, pierce: 10, magic: 20, fire: 50, lightning: -40, holy: 15 }
             },
             "5_Libra": {
-                negations: { standard: 0, slash: 10, strike: 0, pierce: -20, magic: -15, fire: 0, lightning: 20, holy: -25 }
+                // Libra, Creature of Night - weak to Holy/Fire/Slash, resists Magic
+                negations: { standard: 0, slash: -10, strike: 0, pierce: 0, magic: 20, fire: -20, lightning: 0, holy: -35 }
             },
             "6_Fulghor": {
-                negations: { standard: 0, slash: 0, strike: -15, pierce: 0, magic: -20, fire: 30, lightning: 50, holy: -10 }
+                // Fulghor, Champion of Nightglow - weak to Lightning, resists Holy
+                negations: { standard: 0, slash: 0, strike: 0, pierce: 0, magic: 0, fire: 0, lightning: -20, holy: 30 }
             },
             "7_Caligo": {
-                negations: { standard: 0, slash: -10, strike: 0, pierce: 0, magic: 0, fire: -35, lightning: 10, holy: -20 }
+                // Caligo, Miasma of Night - weak to Fire/Strike, resists Physical/Elemental
+                negations: { standard: 15, slash: 15, strike: -15, pierce: 10, magic: 20, fire: -35, lightning: 20, holy: 20 }
             },
             "8_Heolstor": {
-                negations: { standard: 0, slash: 0, strike: 0, pierce: 0, magic: 0, fire: -15, lightning: -15, holy: -25 }
+                // Heolstor, the Nightlord (Phase 1) - weak to Holy/Fire/Slash/Pierce
+                negations: { standard: 0, slash: -15, strike: 10, pierce: -10, magic: 0, fire: -20, lightning: 0, holy: -35 }
             },
             "9_Balancers": {
-                negations: { standard: 0, slash: 0, strike: 0, pierce: 0, magic: -10, fire: -10, lightning: -10, holy: -10 }
+                // Balancers - weak to Strike, resists Holy
+                negations: { standard: 0, slash: 8, strike: -10, pierce: 0, magic: 0, fire: 8, lightning: 10, holy: 30 }
             },
             "10_Greg": {
-                negations: { standard: 0, slash: -10, strike: 0, pierce: -10, magic: 0, fire: -20, lightning: 10, holy: -25 }
+                // Tricephalos (same as Gladius) - weak to Holy/Pierce, resists Fire
+                negations: { standard: 0, slash: 0, strike: 0, pierce: -10, magic: 0, fire: 50, lightning: 0, holy: -35 }
             }
         };
 
@@ -238,7 +248,8 @@
                 weakSection.classList.add('hidden');
             } else {
                 weakSection.classList.remove('hidden');
-                weakEl.innerHTML = weaknesses.slice(0, 4).map(w => `
+                // Show ALL weaknesses, not just top 4
+                weakEl.innerHTML = weaknesses.map(w => `
                     <div class="row">
                         <span class="label ${CLASSES[w.type] || ''}">${LABELS[w.type]}</span>
                         <span class="value weak">${w.val}</span>
@@ -252,7 +263,8 @@
                 resistSection.classList.add('hidden');
             } else {
                 resistSection.classList.remove('hidden');
-                resistEl.innerHTML = resistances.slice(0, 3).map(r => `
+                // Show ALL resistances, not just top 3
+                resistEl.innerHTML = resistances.map(r => `
                     <div class="row">
                         <span class="label ${CLASSES[r.type] || ''}">${LABELS[r.type]}</span>
                         <span class="value resist">+${r.val}</span>
