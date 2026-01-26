@@ -119,6 +119,10 @@ FIELD_BOSS_DATA = {
     "Stoneskin Lords": {
         "negations": {"standard": 10, "slash": 35, "strike": 10, "pierce": 35, "magic": 40, "fire": 40, "lightning": 40, "holy": 40}
     },
+    # DLC Bosses
+    "Blackgaol Knight": {
+        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 25, "fire": 30, "lightning": 25, "holy": 25}
+    },
 }
 
 # Common OCR misreadings to correct
@@ -209,6 +213,10 @@ OCR_CORRECTIONS = {
     "Beastly Br1gade": "Beastly Brigade",
     "Stoneskin Lords": "Stoneskin Lords",
     "Stonesk1n Lords": "Stoneskin Lords",
+    # DLC Bosses
+    "B1ackgaol Knight": "Blackgaol Knight",
+    "Blackgaol Kn1ght": "Blackgaol Knight",
+    "Blackgao1 Knight": "Blackgaol Knight",
 }
 
 

@@ -419,9 +419,8 @@
             showFieldBossError();
         }
 
-        if (!testBoss && !testFieldBoss && !testFieldBossError) {
-            connectWebSocket();
-        }
+        // Always connect WebSocket so overlay-command works
+        connectWebSocket();
     </script>
 </body>
 </html>
