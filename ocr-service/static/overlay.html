@@ -131,6 +131,38 @@
             font-size: 13px;
         }
 
+        .status-section {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #333;
+        }
+
+        .status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .status-row {
+            font-size: 12px;
+        }
+
+        .status-row .status-class {
+            font-weight: bold;
+        }
+
+        .status-weak .status-class { color: #4ade80; }
+        .status-strong .status-class { color: #f87171; }
+        .status-immune .status-class { color: #fca5a5; }
+
+        /* Status type label colors */
+        .status-poison { color: #4ade80; }
+        .status-scarlet_rot { color: #f97316; }
+        .status-blood_loss { color: #ef4444; }
+        .status-frostbite { color: #e2e8f0; }
+        .status-sleep { color: #a855f7; }
+        .status-madness { color: #facc15; }
+
         /* Damage type colors */
         .fire { color: #ff6b35; }
         .lightning { color: #fbbf24; }
@@ -159,6 +191,9 @@
                 <div id="fieldResistList"></div>
             </div>
         </div>
+        <div id="fieldBossStatusSection" class="status-section hidden">
+            <div id="fieldBossStatusList" class="status-list"></div>
+        </div>
     </div>
 
     <!-- Nightlord Panel - Top Right -->
@@ -174,6 +209,9 @@
                 <div class="section-title">Strengths</div>
                 <div id="resistList"></div>
             </div>
+        </div>
+        <div id="nightlordStatusSection" class="status-section hidden">
+            <div id="nightlordStatusList" class="status-list"></div>
         </div>
     </div>
 
@@ -206,6 +244,79 @@
         const CLASSES = {
             fire: "fire", lightning: "lightning", magic: "magic", holy: "holy"
         };
+
+        const STATUS_LABELS = {
+            poison: "Poison",
+            scarlet_rot: "Rot",
+            blood_loss: "Blood",
+            frostbite: "Frost",
+            sleep: "Sleep",
+            madness: "Madn."
+        };
+
+        // Classify status resistance: 'weak', 'strong', 'immune', or null (default/don't show)
+        function classifyStatusResistance(value) {
+            if (value === "immune") return "immune";
+            if (!Array.isArray(value) || value.length === 0) return null;
+
+            const firstVal = value[0];
+
+            // If first value < 154, it's weak (easier to proc)
+            if (firstVal < 154) return "weak";
+
+            // Default is [154, 252, 542, 999] - 4 elements starting at 154
+            // If exactly 4 elements and starts at 154, it's default
+            if (value.length === 4 && firstVal === 154) return null;
+
+            // Fewer than 4 elements with first > 154 means strong (harder to proc)
+            if (value.length < 4 && firstVal > 154) return "strong";
+
+            // More than 4 elements means weak (more proc opportunities)
+            if (value.length > 4) return "weak";
+
+            return null;
+        }
+
+        function renderStatusSection(statusResistances, sectionId, listId) {
+            const section = document.getElementById(sectionId);
+            const list = document.getElementById(listId);
+
+            if (!statusResistances || Object.keys(statusResistances).length === 0) {
+                section?.classList.add('hidden');
+                return;
+            }
+
+            // Group by classification
+            const groups = { immune: [], strong: [], weak: [] };
+            for (const [status, value] of Object.entries(statusResistances)) {
+                const classification = classifyStatusResistance(value);
+                if (classification) {
+                    groups[classification].push({ status, label: STATUS_LABELS[status] || status });
+                }
+            }
+
+            // Build rows for non-empty groups
+            const rows = [];
+            const order = ['immune', 'strong', 'weak'];
+            const classLabels = { immune: 'IMMUNE', strong: 'STRONG', weak: 'WEAK' };
+
+            for (const cls of order) {
+                if (groups[cls].length > 0) {
+                    const statusList = groups[cls].map(s =>
+                        `<span class="status-${s.status}">${s.label}</span>`
+                    ).join(', ');
+                    rows.push(`<div class="status-row status-${cls}"><span class="status-class">${classLabels[cls]}:</span> ${statusList}</div>`);
+                }
+            }
+
+            if (rows.length === 0) {
+                section?.classList.add('hidden');
+                return;
+            }
+
+            section?.classList.remove('hidden');
+            list.innerHTML = rows.join('');
+        }
 
         let currentNightlord = null;
         let currentFieldBoss = null;
@@ -299,6 +410,10 @@
 
             panel.classList.remove('hidden');
             renderWeaknessPanel(boss.negations, 'weakList', 'weakSection', 'resistList', 'resistSection');
+
+            // Render status resistances from BOSS_DATA
+            const fullData = BOSS_DATA?.nightlords?.[bossId];
+            renderStatusSection(fullData?.status_resistances, 'nightlordStatusSection', 'nightlordStatusList');
         }
 
         function renderFieldBoss(bossName, negations) {
@@ -317,6 +432,10 @@
             panel.classList.remove('hidden');
             document.getElementById('fieldBossName').textContent = bossName;
             renderWeaknessPanel(negations, 'fieldWeakList', 'fieldWeakSection', 'fieldResistList', 'fieldResistSection');
+
+            // Render status resistances from BOSS_DATA (look up by name)
+            const fullData = BOSS_DATA?.field_bosses?.[bossName];
+            renderStatusSection(fullData?.status_resistances, 'fieldBossStatusSection', 'fieldBossStatusList');
         }
 
         function hideFieldBoss() {
