@@ -123,6 +123,9 @@ FIELD_BOSS_DATA = {
     "Blackgaol Knight": {
         "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 25, "fire": 30, "lightning": 25, "holy": 25}
     },
+    "Valiant Gargoyle": {
+        "negations": {"standard": 10, "slash": 35, "strike": 0, "pierce": 35, "magic": 20, "fire": 40, "lightning": 40, "holy": 40}
+    },
 }
 
 # Common OCR misreadings to correct
@@ -217,6 +220,9 @@ OCR_CORRECTIONS = {
     "B1ackgaol Knight": "Blackgaol Knight",
     "Blackgaol Kn1ght": "Blackgaol Knight",
     "Blackgao1 Knight": "Blackgaol Knight",
+    "Va1iant Gargoyle": "Valiant Gargoyle",
+    "Valiant Gargoy1e": "Valiant Gargoyle",
+    "Valiant Gargoyle": "Valiant Gargoyle",
 }
 
 
