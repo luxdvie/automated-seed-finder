@@ -126,6 +126,9 @@ FIELD_BOSS_DATA = {
     "Valiant Gargoyle": {
         "negations": {"standard": 10, "slash": 35, "strike": 0, "pierce": 35, "magic": 20, "fire": 40, "lightning": 40, "holy": 40}
     },
+    "Fallingstar Beast": {
+        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 20, "fire": 20, "lightning": 20, "holy": 20}
+    },
 }
 
 # Common OCR misreadings to correct
@@ -223,6 +226,9 @@ OCR_CORRECTIONS = {
     "Va1iant Gargoyle": "Valiant Gargoyle",
     "Valiant Gargoy1e": "Valiant Gargoyle",
     "Valiant Gargoyle": "Valiant Gargoyle",
+    "Fa1lingstar Beast": "Fallingstar Beast",
+    "Fallingstar 8east": "Fallingstar Beast",
+    "Fall1ngstar Beast": "Fallingstar Beast",
 }
 
 
