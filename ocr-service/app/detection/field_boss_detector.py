@@ -135,6 +135,15 @@ FIELD_BOSS_DATA = {
     "Fallingstar Beast": {
         "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 20, "fire": 20, "lightning": 20, "holy": 20}
     },
+    "Black Blade Kindred": {
+        "negations": {"standard": 10, "slash": 35, "strike": 0, "pierce": 35, "magic": 20, "fire": 40, "lightning": 40, "holy": 80}
+    },
+    "Blackblade Kindred": {
+        "negations": {"standard": 10, "slash": 35, "strike": 0, "pierce": 35, "magic": 20, "fire": 40, "lightning": 40, "holy": 80}
+    },
+    "Nameless King": {
+        "negations": {"standard": 20, "slash": 21, "strike": 18, "pierce": 2, "magic": 10, "fire": 35, "lightning": -31, "holy": 0}
+    },
 }
 
 # Common OCR misreadings to correct
@@ -235,6 +244,12 @@ OCR_CORRECTIONS = {
     "Fa1lingstar Beast": "Fallingstar Beast",
     "Fallingstar 8east": "Fallingstar Beast",
     "Fall1ngstar Beast": "Fallingstar Beast",
+    "Black B1ade Kindred": "Black Blade Kindred",
+    "Black Blade K1ndred": "Black Blade Kindred",
+    "Blackb1ade Kindred": "Blackblade Kindred",
+    "Blackblade K1ndred": "Blackblade Kindred",
+    "Name1ess King": "Nameless King",
+    "Nameless K1ng": "Nameless King",
 }
 
 
