@@ -896,6 +896,42 @@ async def overlay_websocket(websocket: WebSocket):
         logger.info(f"Overlay client disconnected. Total: {overlay_manager.connection_count}")
 
 
+@app.get("/overlay-command")
+async def overlay_command(command: str, boss: Optional[str] = None):
+    """Send a command to all overlay clients.
+
+    Commands:
+        hide - Make overlay transparent/invisible
+        show - Make overlay visible again
+        reset - Reset overlay state (hides until next detection)
+        showBoss - Show a specific boss (requires boss param)
+
+    Trigger from Stream Deck:
+        http://10.0.0.91:8000/overlay-command?command=hide
+        http://10.0.0.91:8000/overlay-command?command=show
+        http://10.0.0.91:8000/overlay-command?command=reset
+        http://10.0.0.91:8000/overlay-command?command=showBoss&boss=10_Greg
+    """
+    valid_commands = ["hide", "show", "reset", "showBoss"]
+    if command not in valid_commands:
+        return {"error": f"Invalid command. Valid: {valid_commands}"}
+
+    if command == "showBoss" and not boss:
+        return {"error": "showBoss requires boss parameter (e.g., boss=10_Greg)"}
+
+    if overlay_manager.connection_count == 0:
+        return {"status": "no_clients", "message": "No overlay clients connected"}
+
+    message = {"type": "command", "command": command}
+    if boss:
+        message["boss"] = boss
+
+    await overlay_manager.broadcast(message)
+
+    logger.info(f"Overlay command sent: {command}" + (f" boss={boss}" if boss else ""))
+    return {"status": "ok", "command": command, "boss": boss, "clients": overlay_manager.connection_count}
+
+
 @app.get("/calibration/capture/{monitor_index}")
 async def calibration_capture(monitor_index: int):
     """Capture the map region and return as image for calibration UI."""

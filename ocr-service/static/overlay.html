@@ -140,8 +140,22 @@
 
         let currentBoss = null;
         let ws = null;
+        let isVisible = true;
+        let isPaused = false;  // When true, don't update on detection
+
+        function setOverlayVisible(visible) {
+            isVisible = visible;
+            document.body.style.opacity = visible ? '1' : '0';
+        }
+
+        function resetOverlay() {
+            isPaused = false;
+            currentBoss = null;
+            document.getElementById('bossPanel').classList.add('hidden');
+        }
 
         function renderBoss(bossId) {
+            if (isPaused) return;  // Don't update if paused
             const boss = BOSS_DATA[bossId];
             const panel = document.getElementById('bossPanel');
 
@@ -211,7 +225,28 @@
             ws.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    if (data.type === 'detection') {
+
+                    if (data.type === 'command') {
+                        // Handle overlay commands from Stream Deck
+                        switch (data.command) {
+                            case 'hide':
+                                setOverlayVisible(false);
+                                break;
+                            case 'show':
+                                setOverlayVisible(true);
+                                break;
+                            case 'reset':
+                                resetOverlay();
+                                break;
+                            case 'showBoss':
+                                if (data.boss) {
+                                    isPaused = false;
+                                    currentBoss = data.boss;
+                                    renderBoss(data.boss);
+                                }
+                                break;
+                        }
+                    } else if (data.type === 'detection') {
                         // Update boss panel
                         if (data.nightlord && data.nightlord_confidence > 0.7) {
                             if (data.nightlord !== currentBoss) {
