@@ -333,6 +333,13 @@ async def capture_field_boss(monitor_index: int):
             "debug_image": "debug_field_boss_region.jpg"
         }
     else:
+        # Broadcast error to overlay (shows red X for 3 seconds)
+        if overlay_manager.connection_count > 0:
+            await overlay_manager.broadcast({
+                "type": "command",
+                "command": "fieldBossError"
+            })
+
         return {
             "detected": False,
             "hint": "No field boss name detected. Make sure boss name is visible on screen.",
@@ -979,6 +986,7 @@ async def overlay_command(command: str, boss: Optional[str] = None, fieldBoss: O
         showBoss - Show a specific nightlord (requires boss param)
         showFieldBoss - Show a specific field boss (requires fieldBoss param)
         hideFieldBoss - Hide the field boss panel
+        fieldBossError - Show red X in top-left for 3 seconds (detection failed)
 
     Trigger from Stream Deck:
         http://10.0.0.91:8000/overlay-command?command=hide
@@ -987,8 +995,9 @@ async def overlay_command(command: str, boss: Optional[str] = None, fieldBoss: O
         http://10.0.0.91:8000/overlay-command?command=showBoss&boss=10_Greg
         http://10.0.0.91:8000/overlay-command?command=showFieldBoss&fieldBoss=Blackgaol%20Knight
         http://10.0.0.91:8000/overlay-command?command=hideFieldBoss
+        http://10.0.0.91:8000/overlay-command?command=fieldBossError
     """
-    valid_commands = ["hide", "show", "reset", "showBoss", "showFieldBoss", "hideFieldBoss"]
+    valid_commands = ["hide", "show", "reset", "showBoss", "showFieldBoss", "hideFieldBoss", "fieldBossError"]
     if command not in valid_commands:
         return {"error": f"Invalid command. Valid: {valid_commands}"}
 

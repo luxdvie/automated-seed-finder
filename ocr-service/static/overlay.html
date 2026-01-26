@@ -43,6 +43,22 @@
             border-left: 3px solid #00d4ff;
         }
 
+        /* Field boss error panel - top left (red border) */
+        .field-boss-error-panel {
+            top: 20px;
+            left: 20px;
+            border-left: 3px solid #ef4444;
+            min-width: 60px;
+            padding: 12px 16px;
+        }
+
+        .error-x {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ef4444;
+            text-align: center;
+        }
+
         .panel-title {
             font-size: 11px;
             color: #888;
@@ -107,6 +123,11 @@
     </style>
 </head>
 <body>
+    <!-- Field Boss Error Panel - Top Left -->
+    <div id="fieldBossErrorPanel" class="panel field-boss-error-panel hidden">
+        <div class="error-x">✕</div>
+    </div>
+
     <!-- Field Boss Panel - Top Left -->
     <div id="fieldBossPanel" class="panel field-boss-panel hidden">
         <div class="panel-title">Field Boss</div>
@@ -183,6 +204,7 @@
         let ws = null;
         let isVisible = true;
         let isPaused = false;
+        let fieldBossErrorTimeout = null;
 
         function setOverlayVisible(visible) {
             isVisible = visible;
@@ -195,6 +217,7 @@
             currentFieldBoss = null;
             document.getElementById('nightlordPanel').classList.add('hidden');
             document.getElementById('fieldBossPanel').classList.add('hidden');
+            hideFieldBossError();
         }
 
         function renderWeaknessPanel(negations, weakListId, weakSectionId, resistListId, resistSectionId) {
@@ -263,6 +286,9 @@
                 return;
             }
 
+            // Hide error panel if showing
+            hideFieldBossError();
+
             panel.classList.remove('hidden');
             document.getElementById('fieldBossName').textContent = bossName;
             renderWeaknessPanel(negations, 'fieldWeakList', 'fieldWeakSection', 'fieldResistList', 'fieldResistSection');
@@ -271,6 +297,33 @@
         function hideFieldBoss() {
             document.getElementById('fieldBossPanel').classList.add('hidden');
             currentFieldBoss = null;
+        }
+
+        function showFieldBossError() {
+            // Clear any existing timeout
+            if (fieldBossErrorTimeout) {
+                clearTimeout(fieldBossErrorTimeout);
+            }
+
+            // Hide the normal field boss panel if showing
+            document.getElementById('fieldBossPanel').classList.add('hidden');
+
+            // Show the error panel
+            document.getElementById('fieldBossErrorPanel').classList.remove('hidden');
+
+            // Auto-hide after 3 seconds
+            fieldBossErrorTimeout = setTimeout(() => {
+                document.getElementById('fieldBossErrorPanel').classList.add('hidden');
+                fieldBossErrorTimeout = null;
+            }, 3000);
+        }
+
+        function hideFieldBossError() {
+            if (fieldBossErrorTimeout) {
+                clearTimeout(fieldBossErrorTimeout);
+                fieldBossErrorTimeout = null;
+            }
+            document.getElementById('fieldBossErrorPanel').classList.add('hidden');
         }
 
         function connectWebSocket() {
@@ -315,6 +368,9 @@
                             case 'hideFieldBoss':
                                 hideFieldBoss();
                                 break;
+                            case 'fieldBossError':
+                                showFieldBossError();
+                                break;
                         }
                     } else if (data.type === 'detection') {
                         // Nightlord detection from map capture
@@ -350,6 +406,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const testBoss = urlParams.get('boss');
         const testFieldBoss = urlParams.get('fieldBoss');
+        const testFieldBossError = urlParams.get('fieldBossError');
 
         if (testBoss) {
             renderNightlord(testBoss);
@@ -358,8 +415,11 @@
             // For testing, use placeholder negations
             renderFieldBoss(testFieldBoss, { standard: 0, slash: 0, strike: -15, pierce: 0, magic: 0, fire: -10, lightning: -20, holy: 0 });
         }
+        if (testFieldBossError) {
+            showFieldBossError();
+        }
 
-        if (!testBoss && !testFieldBoss) {
+        if (!testBoss && !testFieldBoss && !testFieldBossError) {
             connectWebSocket();
         }
     </script>
