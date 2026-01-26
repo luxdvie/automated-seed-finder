@@ -89,6 +89,12 @@ FIELD_BOSS_DATA = {
     "Crucible Knight": {
         "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 40, "fire": 20, "lightning": 20, "holy": 40}
     },
+    "Crucible Knight Ordovis": {
+        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 40, "fire": 20, "lightning": 20, "holy": 40}
+    },
+    "Crucible Knight Siluria": {
+        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 40, "fire": 20, "lightning": 20, "holy": 40}
+    },
     "Crystalians": {
         "negations": {"standard": 10, "slash": 35, "strike": 10, "pierce": 35, "magic": 40, "fire": 40, "lightning": 40, "holy": 40}
     },
