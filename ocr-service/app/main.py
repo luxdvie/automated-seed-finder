@@ -157,19 +157,31 @@ async def list_monitors():
     return {"monitors": monitors}
 
 
+@app.get("/default-monitor")
+async def get_default_monitor():
+    """Get the configured default monitor index."""
+    return {"default_monitor": settings.default_monitor}
+
+
+@app.get("/capture-monitor")
 @app.get("/capture-monitor/{monitor_index}")
-async def capture_monitor(monitor_index: int, debug: bool = False):
+async def capture_monitor(monitor_index: int = None, debug: bool = False):
     """Capture a monitor screenshot and analyze it.
 
     Args:
         monitor_index: Monitor to capture (1 = first monitor, 2 = second, etc.)
+                      If not provided, uses the configured default_monitor.
         debug: If true, also save debug images
 
     This endpoint can be triggered by Stream Deck, curl, or any HTTP client:
+        curl http://localhost:8000/capture-monitor
         curl http://localhost:8000/capture-monitor/2
     """
     from datetime import datetime
     from pathlib import Path
+
+    if monitor_index is None:
+        monitor_index = settings.default_monitor
 
     frame = screen_capture.capture_monitor(monitor_index)
 
@@ -250,6 +262,12 @@ async def capture_monitor(monitor_index: int, debug: bool = False):
             debug_dir = Path(__file__).parent.parent / "debug_captures"
             debug_dir.mkdir(exist_ok=True)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+            # Save original (unannotated) capture
+            original_path = debug_dir / f"capture_{timestamp}_original.jpg"
+            cv2.imwrite(str(original_path), map_region)
+
+            # Save annotated debug capture
             debug_path = debug_dir / f"capture_{timestamp}.jpg"
             cv2.imwrite(str(debug_path), debug_image)
             result["debug_image"] = str(debug_path)
@@ -269,16 +287,23 @@ async def capture_monitor(monitor_index: int, debug: bool = False):
     return result
 
 
+@app.get("/capture-field-boss")
 @app.get("/capture-field-boss/{monitor_index}")
-async def capture_field_boss(monitor_index: int):
+async def capture_field_boss(monitor_index: int = None):
     """Capture screen and detect field boss using OCR.
 
     Reads the boss name from the calibrated 'field_boss_name' region using OCR,
     then looks up the boss's weaknesses/resistances.
 
+    Args:
+        monitor_index: Monitor to capture. If not provided, uses configured default.
+
     Trigger from Stream Deck:
-        curl http://10.0.0.91:8000/capture-field-boss/2
+        curl http://10.0.0.91:8000/capture-field-boss
     """
+    if monitor_index is None:
+        monitor_index = settings.default_monitor
+
     # Check if field_boss_name region is calibrated
     calibration = load_calibration_config()
     cal_regions = calibration.get("regions", {})

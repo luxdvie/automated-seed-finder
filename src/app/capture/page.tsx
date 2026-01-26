@@ -37,20 +37,17 @@ function CapturePageContent() {
   // Check if user is at a church spawn (from Stream Deck button)
   const isChurchSpawn = searchParams.get('church') === 'true'
 
-  // Monitor to capture from (default: 3)
-  const monitor = searchParams.get('monitor') || '3'
-
   useEffect(() => {
     async function captureAndRedirect() {
       try {
         setStatus('capturing')
 
-        // Call the OCR capture endpoint
+        // Call the OCR capture endpoint (uses server-configured default monitor)
         // Use the same hostname as the current page, but port 8000
         const ocrHost = typeof window !== 'undefined'
           ? `http://${window.location.hostname}:8000`
           : 'http://localhost:8000'
-        const response = await fetch(`${ocrHost}/capture-monitor/${monitor}`)
+        const response = await fetch(`${ocrHost}/capture-monitor`)
 
         if (!response.ok) {
           throw new Error(`Capture failed: ${response.statusText}`)
@@ -109,7 +106,7 @@ function CapturePageContent() {
     }
 
     captureAndRedirect()
-  }, [router, isChurchSpawn, monitor])
+  }, [router, isChurchSpawn])
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">

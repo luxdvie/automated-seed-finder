@@ -149,7 +149,7 @@
             <span style="color: #666;">|</span>
             <select id="monitorSelect">
                 <option value="1">Monitor 1</option>
-                <option value="2" selected>Monitor 2</option>
+                <option value="2">Monitor 2</option>
                 <option value="3">Monitor 3</option>
                 <option value="4">Monitor 4</option>
             </select>
@@ -266,6 +266,20 @@
         let startY = 0;
         let currentBox = null;
         let captureMode = 'map'; // 'map' or 'full'
+
+        // Fetch default monitor from server and set dropdown
+        (async function initDefaultMonitor() {
+            try {
+                const response = await fetch('/default-monitor');
+                const data = await response.json();
+                const select = document.getElementById('monitorSelect');
+                if (data.default_monitor && select) {
+                    select.value = data.default_monitor.toString();
+                }
+            } catch (e) {
+                console.warn('Could not fetch default monitor:', e);
+            }
+        })();
 
         function setMode(mode) {
             captureMode = mode;

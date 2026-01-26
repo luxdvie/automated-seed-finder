@@ -18,25 +18,25 @@ Python backend service for video capture and OCR-based seed detection.
     - 4ks is audio input
       - In OBS -> Go to "Advanced Audio Properties" -> Audio Input Capture -> "Monitor and Output" to hear the ps5
     - Browser is the top-most option too
-      - URL: http://10.0.0.91:8000/overlay
+      - URL: http://127.0.0.1:8000/overlay
       - 1920x1080
   - Use a stream deck:
     - When you land, open the map and pause for a sec:
     - Press elgato stream deck buttons for URLs:
-      - When at church: http://10.0.0.91:3000/capture?church=true&monitor=2 (replace with current monitor ID)
-      - When not at church: http://10.0.0.91:3000/capture?monitor=2 (replace with current monitor ID)
+      - When at church: http://127.0.0.1:3000/capture?church=true
+      - When not at church: http://127.0.0.1:3000/capture
       - Then it will navigate you as deep into the seed finder as it can in a new browser window
         - You will probably have to choose one or two more PoI's to figure out seed
     - When a field boss fight starts:
       - Press Stream Deck button with:
-        - http://10.0.0.91:8000/capture-field-boss/2  (replace with current monitor ID)
+        - http://127.0.0.1:8000/capture-field-boss
     - Other commands:
-      - http://10.0.0.91:8000/overlay-command?command=hide (hides everything, but keeps it in memory)
-      - http://10.0.0.91:8000/overlay-command?command=show (shows whatever was hidden)
-      - http://10.0.0.91:8000/overlay-command?command=reset (full clear the overlay)
-	  - http://10.0.0.91:8000/overlay-command?command=hideFieldBoss (hides just the field boss)
-	  - http://10.0.0.91:8000/overlay-command?command=showFieldBoss&fieldBoss=Blackgaol%20Knight (test field boss overlay)
-	  - http://10.0.0.91:8000/overlay-command?command=showBoss&boss=1_Gladius (test nightlord overlay)
+      - http://127.0.0.1:8000/overlay-command?command=hide (hides everything, but keeps it in memory)
+      - http://127.0.0.1:8000/overlay-command?command=show (shows whatever was hidden)
+      - http://127.0.0.1:8000/overlay-command?command=reset (full clear the overlay)
+	  - http://127.0.0.1:8000/overlay-command?command=hideFieldBoss (hides just the field boss)
+	  - http://127.0.0.1:8000/overlay-command?command=showFieldBoss&fieldBoss=Blackgaol%20Knight (test field boss overlay)
+	  - http://127.0.0.1:8000/overlay-command?command=showBoss&boss=1_Gladius (test nightlord overlay)
 
 ### Boss Strength/Weakness Updating
 

@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     ws_host: str = "0.0.0.0"
     ws_port: int = 8000
 
+    # Default monitor for capture (can be changed per setup)
+    default_monitor: int = 2
+
     # Paths
     templates_dir: str = "templates"
 
