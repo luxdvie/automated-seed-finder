@@ -115,6 +115,22 @@
 
         .hidden { display: none; }
 
+        .columns {
+            display: flex;
+            gap: 16px;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .none-text {
+            color: #666;
+            font-style: italic;
+            font-size: 13px;
+        }
+
         /* Damage type colors */
         .fire { color: #ff6b35; }
         .lightning { color: #fbbf24; }
@@ -132,26 +148,32 @@
     <div id="fieldBossPanel" class="panel field-boss-panel hidden">
         <div class="panel-title">Field Boss</div>
         <div class="boss-name" id="fieldBossName"></div>
-        <div id="fieldWeakSection" class="section">
-            <div class="section-title">Weak</div>
-            <div id="fieldWeakList"></div>
-        </div>
-        <div id="fieldResistSection" class="section">
-            <div class="section-title">Resist</div>
-            <div id="fieldResistList"></div>
+        <div id="fieldBossNone" class="none-text hidden">(None)</div>
+        <div id="fieldBossColumns" class="columns">
+            <div id="fieldWeakSection" class="section column">
+                <div class="section-title">Weaknesses</div>
+                <div id="fieldWeakList"></div>
+            </div>
+            <div id="fieldResistSection" class="section column">
+                <div class="section-title">Strengths</div>
+                <div id="fieldResistList"></div>
+            </div>
         </div>
     </div>
 
     <!-- Nightlord Panel - Top Right -->
     <div id="nightlordPanel" class="panel nightlord-panel hidden">
         <div class="panel-title">Nightlord</div>
-        <div id="weakSection" class="section">
-            <div class="section-title">Weak</div>
-            <div id="weakList"></div>
-        </div>
-        <div id="resistSection" class="section">
-            <div class="section-title">Resist</div>
-            <div id="resistList"></div>
+        <div id="nightlordNone" class="none-text hidden">(None)</div>
+        <div id="nightlordColumns" class="columns">
+            <div id="weakSection" class="section column">
+                <div class="section-title">Weaknesses</div>
+                <div id="weakList"></div>
+            </div>
+            <div id="resistSection" class="section column">
+                <div class="section-title">Strengths</div>
+                <div id="resistList"></div>
+            </div>
         </div>
     </div>
 
@@ -241,6 +263,21 @@
 
             weaknesses.sort((a, b) => a.val - b.val);
             resistances.sort((a, b) => b.val - a.val);
+
+            // Handle "(None)" display for both panels
+            const isFieldBoss = weakSectionId === 'fieldWeakSection';
+            const noneId = isFieldBoss ? 'fieldBossNone' : 'nightlordNone';
+            const columnsId = isFieldBoss ? 'fieldBossColumns' : 'nightlordColumns';
+            const noneEl = document.getElementById(noneId);
+            const columnsEl = document.getElementById(columnsId);
+
+            if (weaknesses.length === 0 && resistances.length === 0) {
+                noneEl?.classList.remove('hidden');
+                columnsEl?.classList.add('hidden');
+            } else {
+                noneEl?.classList.add('hidden');
+                columnsEl?.classList.remove('hidden');
+            }
 
             const weakEl = document.getElementById(weakListId);
             const weakSection = document.getElementById(weakSectionId);
@@ -426,8 +463,8 @@
             renderNightlord(testBoss);
         }
         if (testFieldBoss) {
-            // For testing, use placeholder negations
-            renderFieldBoss(testFieldBoss, { standard: 0, slash: 0, strike: -15, pierce: 0, magic: 0, fire: -10, lightning: -20, holy: 0 });
+            // For testing, use placeholder negations with both weaknesses and resistances
+            renderFieldBoss(testFieldBoss, { standard: 0, slash: 0, strike: -15, pierce: 0, magic: 30, fire: -10, lightning: -20, holy: 25 });
         }
         if (testFieldBossError) {
             showFieldBossError();
