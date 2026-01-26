@@ -6,8 +6,16 @@
       "y": 0.755,
       "width": 0.10455993294216262,
       "height": 0.1075
+    },
+    "field_boss_name": {
+      "type": "field_boss_name",
+      "captureMode": "full",
+      "x": 0.23583333333333334,
+      "y": 0.7585185185185185,
+      "width": 0.22583333333333333,
+      "height": 0.03259259259259259
     }
   },
-  "notes": "Coordinates are percentages (0-1) of the map region",
-  "calibrated_at": "2026-01-25T18:10:45"
+  "notes": "Coordinates are percentages (0-1) of the capture region",
+  "calibrated_at": "2026-01-25T19:39:19"
 }

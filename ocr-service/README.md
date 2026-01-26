@@ -2,6 +2,50 @@
 
 Python backend service for video capture and OCR-based seed detection.
 
+## Setup Guide
+
+- Expected Usage
+  - `npm run build && npm run dev` in one terminal to run the base next app
+    - Open http://127.0.0.1:3000/ and refresh a few times and make sure it loads
+  - `npm run ocr` in another terminal to run the ocr app
+    - See detailed first-time install instructions below
+  - Uses:
+    - Elgato Capture 4ks
+    - PS5 -> Input -> Output to Monitor
+  - Use OBS
+    - 4ks is video input
+      - 1920x1080 60fps
+    - 4ks is audio input
+      - In OBS -> Go to "Advanced Audio Properties" -> Audio Input Capture -> "Monitor and Output" to hear the ps5
+    - Browser is the top-most option too
+      - URL: http://10.0.0.91:8000/overlay
+      - 1920x1080
+  - Use a stream deck:
+    - When you land, open the map and pause for a sec:
+    - Press elgato stream deck buttons for URLs:
+      - When at church: http://10.0.0.91:3000/capture?church=true&monitor=2 (replace with current monitor ID)
+      - When not at church: http://10.0.0.91:3000/capture?monitor=2 (replace with current monitor ID)
+      - Then it will navigate you as deep into the seed finder as it can in a new browser window
+        - You will probably have to choose one or two more PoI's to figure out seed
+    - When a field boss fight starts:
+      - Press Stream Deck button with:
+        - http://10.0.0.91:8000/capture-field-boss/2  (replace with current monitor ID)
+    - Other commands:
+      - http://10.0.0.91:8000/overlay-command?command=hide (hides everything, but keeps it in memory)
+      - http://10.0.0.91:8000/overlay-command?command=show (shows whatever was hidden)
+      - http://10.0.0.91:8000/overlay-command?command=reset (full clear the overlay)
+	  - http://10.0.0.91:8000/overlay-command?command=hideFieldBoss (hides just the field boss)
+	  - http://10.0.0.91:8000/overlay-command?command=showFieldBoss&fieldBoss=Blackgaol%20Knight (test field boss overlay)
+	  - http://10.0.0.91:8000/overlay-command?command=showBoss&boss=1_Gladius (test nightlord overlay)
+
+### Boss Strength/Weakness Updating
+
+- List of evergaol bosses: https://eip.gg/nightreign/guides/evergaol-bosses/
+- List of field bosses: https://eip.gg/nightreign/guides/field-bosses/
+- List of bosses (fextra): https://eldenringnightreign.wiki.fextralife.com/Bosses
+- Example boss link: https://eldenringnightreign.wiki.fextralife.com/Royal+Carian+Knight
+- Strengths/weaknesses stored in: field_boss_detector.py
+
 ## Setup
 
 1. Create a virtual environment:

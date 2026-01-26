@@ -333,12 +333,14 @@
             ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
-                console.log('WebSocket connected');
+                console.log('WebSocket connected to', wsUrl);
             };
 
             ws.onmessage = (event) => {
+                console.log('WebSocket received:', event.data);
                 try {
                     const data = JSON.parse(event.data);
+                    console.log('Parsed data:', data.type, data.command);
 
                     if (data.type === 'command') {
                         switch (data.command) {
