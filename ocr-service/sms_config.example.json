@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "recipients": [
+    "+15551234567"
+  ],
+  "_note": "Copy this file to sms_config.json and add your phone numbers. Use E.164 format (+1 country code + number). Recipients must be reachable via iMessage."
+}

@@ -57,15 +57,21 @@ To facilitate this:
 Send boss weaknesses/strengths to your phone via iMessage during gameplay!
 
 **Setup:**
-1. Edit `ocr-service/sms_config.json`:
+1. Copy the example config:
+   ```bash
+   cp ocr-service/sms_config.example.json ocr-service/sms_config.json
+   ```
+2. Edit `ocr-service/sms_config.json` with your phone numbers:
    ```json
    {
      "enabled": true,
-     "recipients": ["+15551234567", "+15559876543"]
+     "recipients": ["+15551234567"]
    }
    ```
-2. Add phone numbers in E.164 format (recipients must be reachable via iMessage)
-3. Your Mac's Messages app will send the texts automatically
+3. Phone numbers must be in E.164 format and reachable via iMessage
+4. Your Mac's Messages app will send the texts automatically
+
+Note: `sms_config.json` is gitignored to keep your phone numbers private.
 
 **Usage via Stream Deck:**
 - Send current boss (whatever is displaying):
@@ -80,13 +86,22 @@ Send boss weaknesses/strengths to your phone via iMessage during gameplay!
 
 **Example message:**
 ```
-🌙 NIGHTLORD: Gladius
+🌙 NIGHTLORD: Libra
 
-Hol: -35%    Fir: +50%
-Prc: -10%
+✅ Leverage Weakness:
+#1 Hol: -35%
+#2 Fir: -20%
+#3 Sla: -10%
 
-Immune: Madness
-Strong: Poison, Rot, Blood, Frost
+❌ Avoid Resistances:
+Mag: +20%
+
+‼️Immune:
+Sleep
+
+⚠️ Strong Against:
+Blood
+Frost
 ```
 
 ### Boss Strength/Weakness Updating

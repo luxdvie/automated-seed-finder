@@ -34,6 +34,9 @@ yarn-error.log*
 .env.local
 !.env.example
 
+# SMS config (contains phone numbers)
+ocr-service/sms_config.json
+
 # vercel
 .vercel
 
