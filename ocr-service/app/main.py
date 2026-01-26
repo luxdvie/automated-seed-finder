@@ -951,17 +951,45 @@ async def calibration_capture(monitor_index: int):
     return Response(content=buffer.tobytes(), media_type="image/jpeg")
 
 
+@app.get("/calibration/capture-full/{monitor_index}")
+async def calibration_capture_full(monitor_index: int):
+    """Capture the full screen and return as image for calibration UI.
+
+    Used for calibrating regions outside the map (e.g., field boss name text).
+    """
+    frame = screen_capture.capture_monitor(monitor_index)
+
+    if frame is None:
+        raise HTTPException(status_code=500, detail=f"Failed to capture monitor {monitor_index}")
+
+    # Return full frame (not just map region)
+    _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+
+    return Response(content=buffer.tobytes(), media_type="image/jpeg")
+
+
 @app.post("/calibration/save")
 async def calibration_save(data: dict):
-    """Save calibration regions to config file."""
+    """Save calibration regions to config file.
+
+    Merges new regions with existing ones (doesn't replace all).
+    """
     try:
+        # Load existing config and merge
+        existing = load_calibration_config()
+        existing_regions = existing.get("regions", {})
+
+        # Merge new regions into existing
+        new_regions = data.get("regions", {})
+        existing_regions.update(new_regions)
+
         config = {
-            "regions": data.get("regions", {}),
-            "notes": "Coordinates are percentages (0-1) of the map region"
+            "regions": existing_regions,
+            "notes": "Coordinates are percentages (0-1) of the capture region"
         }
         save_calibration_config(config)
-        logger.info(f"Calibration saved: {list(config['regions'].keys())}")
-        return {"status": "ok", "saved_regions": list(config["regions"].keys())}
+        logger.info(f"Calibration saved: {list(new_regions.keys())} (total: {list(existing_regions.keys())})")
+        return {"status": "ok", "saved_regions": list(new_regions.keys()), "all_regions": list(existing_regions.keys())}
     except Exception as e:
         logger.error(f"Failed to save calibration: {e}")
         raise HTTPException(status_code=500, detail=str(e))

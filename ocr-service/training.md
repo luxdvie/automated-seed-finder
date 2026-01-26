@@ -19,11 +19,11 @@ Extract each template when that element is visible on the map screen.
 
 Extract when that shifting earth event is visible on the map:
 
-1. [MountainTop](http://localhost:8000/extract-shifting-earth/3?name=MountainTop) - White area, top-left
-2. [Crater](http://localhost:8000/extract-shifting-earth/3?name=Crater) - Red/volcano, middle-top
-3. [Noklateo](http://localhost:8000/extract-shifting-earth/3?name=Noklateo) - Blue/silver, bottom-left
-4. [RottedWoods](http://localhost:8000/extract-shifting-earth/3?name=RottedWoods) - Pink/barren, bottom-right
-5. [GreatHollow](http://localhost:8000/extract-shifting-earth/3?name=GreatHollow) - Entirely different map
+1. [MountainTop](http://localhost:8000/extract-shifting-earth/2?name=MountainTop) - White area, top-left
+2. [Crater](http://localhost:8000/extract-shifting-earth/2?name=Crater) - Red/volcano, middle-top
+3. [Noklateo](http://localhost:8000/extract-shifting-earth/2?name=Noklateo) - Blue/silver, bottom-left
+4. [RottedWoods](http://localhost:8000/extract-shifting-earth/2?name=RottedWoods) - Pink/barren, bottom-right
+5. [GreatHollow](http://localhost:8000/extract-shifting-earth/2?name=GreatHollow) - Entirely different map
 
 ## After Training
 

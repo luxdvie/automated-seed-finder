@@ -49,6 +49,28 @@
             min-width: 250px;
         }
 
+        .mode-toggle {
+            display: flex;
+            gap: 0;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid #444;
+        }
+        .mode-toggle button {
+            border-radius: 0;
+            padding: 10px 16px;
+            background: #2a2a4a;
+            color: #888;
+            border: none;
+        }
+        .mode-toggle button.active {
+            background: #00d4ff;
+            color: #000;
+        }
+        .mode-toggle button:hover:not(.active) {
+            background: #3a3a5a;
+        }
+
         .canvas-container {
             position: relative;
             display: inline-block;
@@ -67,6 +89,16 @@
         }
         .status.success { display: block; background: #00ff8833; border: 1px solid #00ff88; }
         .status.error { display: block; background: #ff475733; border: 1px solid #ff4757; }
+
+        .mode-indicator {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .mode-indicator.map { background: #3b82f6; color: #fff; }
+        .mode-indicator.full { background: #f59e0b; color: #000; }
 
         .save-panel {
             margin-top: 20px;
@@ -109,15 +141,23 @@
         <div id="status" class="status"></div>
 
         <div class="toolbar">
+            <div class="mode-toggle">
+                <button id="modeMap" class="active" onclick="setMode('map')">Map Region</button>
+                <button id="modeFull" onclick="setMode('full')">Full Screen</button>
+            </div>
+            <span class="mode-indicator map" id="modeIndicator">MAP REGION</span>
+            <span style="color: #666;">|</span>
             <select id="monitorSelect">
                 <option value="1">Monitor 1</option>
-                <option value="2">Monitor 2</option>
-                <option value="3" selected>Monitor 3</option>
+                <option value="2" selected>Monitor 2</option>
+                <option value="3">Monitor 3</option>
                 <option value="4">Monitor 4</option>
             </select>
             <button class="btn-primary" onclick="captureScreen()">Capture Screen</button>
             <button class="btn-secondary" onclick="clearBox()">Clear Box</button>
-            <span style="color: #666;">|</span>
+        </div>
+
+        <div class="toolbar" id="quickSaveToolbar">
             <select id="quickNightlord" style="min-width: 180px;">
                 <option value="">Quick save nightlord...</option>
                 <option value="Tricephalos">Tricephalos</option>
@@ -143,17 +183,18 @@
             <div class="row">
                 <select id="boxType">
                     <option value="">-- What is this? --</option>
-                    <optgroup label="Detection Regions (where to look)">
+                    <!-- Map Region options -->
+                    <optgroup label="Detection Regions (Map)" id="mapRegionsGroup">
                         <option value="region:boss">Boss Region (nightlord icon location)</option>
                     </optgroup>
-                    <optgroup label="Shifting Earth Templates">
+                    <optgroup label="Shifting Earth Templates" id="shiftingEarthGroup">
                         <option value="template:shifting_earth:Crater">Crater (red/volcano)</option>
                         <option value="template:shifting_earth:MountainTop">MountainTop (white/snow)</option>
                         <option value="template:shifting_earth:Noklateo">Noklateo (blue/silver)</option>
                         <option value="template:shifting_earth:RottedWoods">RottedWoods (pink/barren)</option>
                         <option value="template:shifting_earth:GreatHollow">GreatHollow (different map)</option>
                     </optgroup>
-                    <optgroup label="Nightlord Templates (uses calibrated boss region)">
+                    <optgroup label="Nightlord Templates" id="nightlordsGroup">
                         <option value="template:nightlords:Tricephalos">Tricephalos</option>
                         <option value="template:nightlords:Augur">Augur</option>
                         <option value="template:nightlords:GapingJaw">GapingJaw</option>
@@ -165,6 +206,10 @@
                         <option value="template:nightlords:FissureInTheFog">FissureInTheFog</option>
                         <option value="template:nightlords:NightAspect">NightAspect</option>
                     </optgroup>
+                    <!-- Full Screen options -->
+                    <optgroup label="Full Screen Regions" id="fullScreenGroup" style="display:none;">
+                        <option value="region:field_boss_name">Field Boss Name (OCR text region)</option>
+                    </optgroup>
                 </select>
                 <button class="btn-success" onclick="saveBox()">Save</button>
             </div>
@@ -173,19 +218,34 @@
 
         <div class="instructions">
             <h3>How to use</h3>
-            <p style="margin-bottom: 10px;"><strong>For Nightlords (quick method):</strong></p>
-            <ol>
-                <li>Have the boss visible in-game</li>
-                <li>Select the boss name from "Quick save nightlord..." dropdown</li>
-                <li>Click <strong>Save Boss</strong> (uses your calibrated boss region)</li>
-            </ol>
-            <p style="margin: 15px 0 10px;"><strong>For Regions & Shifting Earth:</strong></p>
-            <ol>
-                <li><strong>Capture Screen</strong> - takes a screenshot</li>
-                <li><strong>Draw a box</strong> - click and drag around what you want</li>
-                <li><strong>Select what it is</strong> - choose from dropdown</li>
-                <li><strong>Save</strong></li>
-            </ol>
+            <div id="instructionsMap">
+                <p style="margin-bottom: 10px;"><strong>For Nightlords (quick method):</strong></p>
+                <ol>
+                    <li>Have the boss visible in-game</li>
+                    <li>Select the boss name from "Quick save nightlord..." dropdown</li>
+                    <li>Click <strong>Save Boss</strong> (uses your calibrated boss region)</li>
+                </ol>
+                <p style="margin: 15px 0 10px;"><strong>For Regions & Shifting Earth:</strong></p>
+                <ol>
+                    <li><strong>Capture Screen</strong> - takes a screenshot of the map region</li>
+                    <li><strong>Draw a box</strong> - click and drag around what you want</li>
+                    <li><strong>Select what it is</strong> - choose from dropdown</li>
+                    <li><strong>Save</strong></li>
+                </ol>
+            </div>
+            <div id="instructionsFull" style="display:none;">
+                <p style="margin-bottom: 10px;"><strong>Full Screen Mode - For Field Boss OCR:</strong></p>
+                <ol>
+                    <li>Switch to <strong>Full Screen</strong> mode above</li>
+                    <li>Have a field boss name visible on screen</li>
+                    <li><strong>Capture Screen</strong> - captures the entire monitor</li>
+                    <li><strong>Draw a box</strong> around the boss name text</li>
+                    <li>Select <strong>Field Boss Name</strong> and save</li>
+                </ol>
+                <p style="margin-top: 10px; color: #f59e0b;">
+                    This region will be used for OCR to read field boss names during gameplay.
+                </p>
+            </div>
             <p style="margin-top: 15px; color: #888;">
                 Restart OCR service after saving to apply changes.
             </p>
@@ -204,7 +264,41 @@
         let isDrawing = false;
         let startX = 0;
         let startY = 0;
-        let currentBox = null; // Only one box: {x, y, w, h}
+        let currentBox = null;
+        let captureMode = 'map'; // 'map' or 'full'
+
+        function setMode(mode) {
+            captureMode = mode;
+            document.getElementById('modeMap').classList.toggle('active', mode === 'map');
+            document.getElementById('modeFull').classList.toggle('active', mode === 'full');
+
+            const indicator = document.getElementById('modeIndicator');
+            indicator.textContent = mode === 'map' ? 'MAP REGION' : 'FULL SCREEN';
+            indicator.className = 'mode-indicator ' + (mode === 'map' ? 'map' : 'full');
+
+            // Show/hide relevant UI
+            document.getElementById('quickSaveToolbar').style.display = mode === 'map' ? 'flex' : 'none';
+            document.getElementById('instructionsMap').style.display = mode === 'map' ? 'block' : 'none';
+            document.getElementById('instructionsFull').style.display = mode === 'full' ? 'block' : 'none';
+
+            // Show/hide dropdown options
+            document.getElementById('mapRegionsGroup').style.display = mode === 'map' ? '' : 'none';
+            document.getElementById('shiftingEarthGroup').style.display = mode === 'map' ? '' : 'none';
+            document.getElementById('nightlordsGroup').style.display = mode === 'map' ? '' : 'none';
+            document.getElementById('fullScreenGroup').style.display = mode === 'full' ? '' : 'none';
+
+            // Clear current capture when switching modes
+            image = null;
+            currentBox = null;
+            savePanel.classList.remove('visible');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#666';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Click "Capture Screen" to capture ${mode === 'map' ? 'map region' : 'full screen'}`, canvas.width/2, canvas.height/2);
+        }
 
         function showStatus(message, type = 'success') {
             const status = document.getElementById('status');
@@ -215,9 +309,13 @@
 
         async function captureScreen() {
             const monitor = document.getElementById('monitorSelect').value;
+            const endpoint = captureMode === 'map'
+                ? `/calibration/capture/${monitor}`
+                : `/calibration/capture-full/${monitor}`;
+
             try {
-                showStatus('Capturing...', 'success');
-                const response = await fetch(`/calibration/capture/${monitor}`);
+                showStatus(`Capturing ${captureMode === 'map' ? 'map region' : 'full screen'}...`, 'success');
+                const response = await fetch(endpoint);
                 if (!response.ok) throw new Error('Capture failed');
 
                 const blob = await response.blob();
@@ -264,7 +362,7 @@
 
             // Draw the box if exists
             if (currentBox) {
-                ctx.strokeStyle = '#00ff88';
+                ctx.strokeStyle = captureMode === 'map' ? '#00ff88' : '#f59e0b';
                 ctx.lineWidth = 3;
                 ctx.strokeRect(currentBox.x, currentBox.y, currentBox.w, currentBox.h);
             }
@@ -390,11 +488,19 @@
                 if (saveType === 'region') {
                     // Save as calibration region
                     const regionName = parts[1];
+
+                    // Include capture mode info for full-screen regions
+                    const regionData = {
+                        type: regionName,
+                        captureMode: captureMode,
+                        ...region
+                    };
+
                     const response = await fetch('/calibration/save', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            regions: { [regionName]: { type: regionName, ...region } }
+                            regions: { [regionName]: regionData }
                         })
                     });
 
@@ -430,6 +536,9 @@
                 showStatus('Failed to save: ' + err.message, 'error');
             }
         }
+
+        // Initialize
+        setMode('map');
     </script>
 </body>
 </html>

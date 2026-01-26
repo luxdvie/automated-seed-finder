@@ -10,7 +10,8 @@
     "analyze": "ANALYZE=true next build",
     "lint:security": "eslint . --ext .ts,.tsx --config .eslintrc.security.json",
     "sync:pages": "node scripts/sync-public-to-docs.mjs",
-    "generate:seo": "node scripts/generate-seo-files.mjs"
+    "generate:seo": "node scripts/generate-seo-files.mjs",
+    "ocr": "(cd ocr-service && ./venv/bin/python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000)"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
