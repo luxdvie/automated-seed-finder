@@ -178,49 +178,25 @@
     </div>
 
     <script>
-        // Nightlord data (by app ID) - Source: eldenringnightreign.wiki.fextralife.com
-        const NIGHTLORD_DATA = {
-            "1_Gladius": {
-                // Gladius, Beast of Night - weak to Holy/Pierce, resists Fire
-                negations: { standard: 0, slash: 0, strike: 0, pierce: -10, magic: 0, fire: 50, lightning: 0, holy: -35 }
-            },
-            "2_Adel": {
-                // Adel, Baron of Night - resists Fire/Lightning (weak to Poison status, not damage type)
-                negations: { standard: 0, slash: 0, strike: 0, pierce: 0, magic: 0, fire: 20, lightning: 50, holy: 0 }
-            },
-            "3_Gnoster": {
-                // Gnoster, Wisdom of Night (Moth phase) - weak to Fire/Slash/Pierce, resists Magic
-                negations: { standard: -15, slash: -25, strike: -15, pierce: -25, magic: 50, fire: -40, lightning: 10, holy: 10 }
-            },
-            "4_Maris": {
-                // Maris, Fathom of Night - weak to Lightning/Slash, resists Fire/Strike
-                negations: { standard: 0, slash: -15, strike: 20, pierce: 10, magic: 20, fire: 50, lightning: -40, holy: 15 }
-            },
-            "5_Libra": {
-                // Libra, Creature of Night - weak to Holy/Fire/Slash, resists Magic
-                negations: { standard: 0, slash: -10, strike: 0, pierce: 0, magic: 20, fire: -20, lightning: 0, holy: -35 }
-            },
-            "6_Fulghor": {
-                // Fulghor, Champion of Nightglow - weak to Lightning, resists Holy
-                negations: { standard: 0, slash: 0, strike: 0, pierce: 0, magic: 0, fire: 0, lightning: -20, holy: 30 }
-            },
-            "7_Caligo": {
-                // Caligo, Miasma of Night - weak to Fire/Strike, resists Physical/Elemental
-                negations: { standard: 15, slash: 15, strike: -15, pierce: 10, magic: 20, fire: -35, lightning: 20, holy: 20 }
-            },
-            "8_Heolstor": {
-                // Heolstor, the Nightlord (Phase 1) - weak to Holy/Fire/Slash/Pierce
-                negations: { standard: 0, slash: -15, strike: 10, pierce: -10, magic: 0, fire: -20, lightning: 0, holy: -35 }
-            },
-            "9_Balancers": {
-                // Balancers - weak to Strike, resists Holy
-                negations: { standard: 0, slash: 8, strike: -10, pierce: 0, magic: 0, fire: 8, lightning: 10, holy: 30 }
-            },
-            "10_Greg": {
-                // Tricephalos (same as Gladius) - weak to Holy/Pierce, resists Fire
-                negations: { standard: 0, slash: 0, strike: 0, pierce: -10, magic: 0, fire: 50, lightning: 0, holy: -35 }
+        // Boss data loaded from /api/bosses
+        let NIGHTLORD_DATA = {};
+        let BOSS_DATA = null;
+
+        // Load boss data from API
+        async function loadBossData() {
+            try {
+                const response = await fetch('/api/bosses');
+                BOSS_DATA = await response.json();
+
+                // Build NIGHTLORD_DATA from the loaded data
+                for (const [id, data] of Object.entries(BOSS_DATA.nightlords || {})) {
+                    NIGHTLORD_DATA[id] = { negations: data.negations };
+                }
+                console.log('Boss data loaded:', Object.keys(NIGHTLORD_DATA).length, 'nightlords');
+            } catch (e) {
+                console.error('Failed to load boss data:', e);
             }
-        };
+        }
 
         const LABELS = {
             standard: "Std", slash: "Sla", strike: "Str", pierce: "Prc",
@@ -453,25 +429,32 @@
             };
         }
 
-        // URL params for testing
-        const urlParams = new URLSearchParams(window.location.search);
-        const testBoss = urlParams.get('boss');
-        const testFieldBoss = urlParams.get('fieldBoss');
-        const testFieldBossError = urlParams.get('fieldBossError');
+        // Initialize: load boss data, then set up everything else
+        async function init() {
+            await loadBossData();
 
-        if (testBoss) {
-            renderNightlord(testBoss);
-        }
-        if (testFieldBoss) {
-            // For testing, use placeholder negations with both weaknesses and resistances
-            renderFieldBoss(testFieldBoss, { standard: 0, slash: 0, strike: -15, pierce: 0, magic: 30, fire: -10, lightning: -20, holy: 25 });
-        }
-        if (testFieldBossError) {
-            showFieldBossError();
+            // URL params for testing
+            const urlParams = new URLSearchParams(window.location.search);
+            const testBoss = urlParams.get('boss');
+            const testFieldBoss = urlParams.get('fieldBoss');
+            const testFieldBossError = urlParams.get('fieldBossError');
+
+            if (testBoss) {
+                renderNightlord(testBoss);
+            }
+            if (testFieldBoss) {
+                // For testing, use placeholder negations with both weaknesses and resistances
+                renderFieldBoss(testFieldBoss, { standard: 0, slash: 0, strike: -15, pierce: 0, magic: 30, fire: -10, lightning: -20, holy: 25 });
+            }
+            if (testFieldBossError) {
+                showFieldBossError();
+            }
+
+            // Always connect WebSocket so overlay-command works
+            connectWebSocket();
         }
 
-        // Always connect WebSocket so overlay-command works
-        connectWebSocket();
+        init();
     </script>
 </body>
 </html>

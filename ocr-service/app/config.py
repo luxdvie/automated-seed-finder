@@ -1,5 +1,7 @@
 """Configuration settings for OCR service."""
 
+import json
+from pathlib import Path
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -52,23 +54,43 @@ class Settings(BaseSettings):
 settings = Settings()
 
 
-# Nightlord mapping from in-game names to app IDs
-NIGHTLORD_MAPPING = {
-    "Augur": "4_Maris",
-    "GapingJaw": "2_Adel",
-    "SentientPest": "3_Gnoster",
-    "Tricephalos": "1_Gladius",
-    "DarkdriftKnight": "6_Fulghor",
-    "EquilibrousBeast": "5_Libra",
-    "Balancers": "9_Balancers",
-    "Dreglord": "10_Greg",
-    "FissureInTheFog": "7_Caligo",
-    "NightAspect": "8_Heolstor",
-    "Libra": "5_Libra",
-    "Caligo": "7_Caligo",
-    "Heolstor": "8_Heolstor",
-    "Greg": "10_Greg",
-}
+# Load boss data from JSON file
+_BOSSES_JSON_PATH = Path(__file__).parent.parent / "data" / "bosses.json"
+
+
+def _load_nightlord_mapping() -> dict:
+    """Build NIGHTLORD_MAPPING from bosses.json template_names."""
+    mapping = {}
+    try:
+        with open(_BOSSES_JSON_PATH, "r") as f:
+            bosses_data = json.load(f)
+
+        for nightlord_id, data in bosses_data.get("nightlords", {}).items():
+            for template_name in data.get("template_names", []):
+                mapping[template_name] = nightlord_id
+    except (FileNotFoundError, json.JSONDecodeError):
+        # Fallback to hardcoded values if JSON fails to load
+        mapping = {
+            "Augur": "4_Maris",
+            "GapingJaw": "2_Adel",
+            "SentientPest": "3_Gnoster",
+            "Tricephalos": "1_Gladius",
+            "DarkdriftKnight": "6_Fulghor",
+            "EquilibrousBeast": "5_Libra",
+            "Balancers": "9_Balancers",
+            "Dreglord": "10_Greg",
+            "FissureInTheFog": "7_Caligo",
+            "NightAspect": "8_Heolstor",
+            "Libra": "5_Libra",
+            "Caligo": "7_Caligo",
+            "Heolstor": "8_Heolstor",
+            "Greg": "10_Greg",
+        }
+    return mapping
+
+
+# Nightlord mapping from in-game template names to app IDs
+NIGHTLORD_MAPPING = _load_nightlord_mapping()
 
 # Reverse mapping for display
 NIGHTLORD_DISPLAY_NAMES = {v: k for k, v in NIGHTLORD_MAPPING.items()}

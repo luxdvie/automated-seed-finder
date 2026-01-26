@@ -1008,6 +1008,17 @@ async def overlay_page():
         return HTMLResponse(content=f.read())
 
 
+@app.get("/api/bosses")
+async def get_boss_data():
+    """Get all boss data (nightlords and field bosses) from the central JSON file.
+
+    Returns the complete boss database including negations, status resistances,
+    names, and OCR spelling variations.
+    """
+    from .detection.field_boss_detector import get_all_boss_data
+    return JSONResponse(content=get_all_boss_data())
+
+
 @app.websocket("/ws/overlay")
 async def overlay_websocket(websocket: WebSocket):
     """WebSocket endpoint for real-time overlay updates.

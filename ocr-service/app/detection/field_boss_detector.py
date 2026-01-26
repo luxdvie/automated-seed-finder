@@ -5,252 +5,67 @@ import numpy as np
 import pytesseract
 from typing import Optional, Dict, Tuple
 import logging
-import re
+import json
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Field boss names mapped to their weakness data (from Fextralife wiki)
-# Negative = weak to (takes more damage), Positive = resistant to (takes less damage)
-FIELD_BOSS_DATA = {
-    # From eip.gg field boss list + Fextralife data
-    "Ancestor Spirit": {
-        "negations": {"standard": 0, "slash": -10, "strike": 0, "pierce": 0, "magic": 20, "fire": -20, "lightning": 0, "holy": -20}
-    },
-    "Ancient Hero of Zamor": {
-        "negations": {"standard": 10, "slash": 10, "strike": 10, "pierce": 0, "magic": 0, "fire": -20, "lightning": -20, "holy": 0}
-    },
-    "Bell Bearing Hunter": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 10, "magic": 40, "fire": 40, "lightning": 20, "holy": 40}
-    },
-    "Black Knife Assassin": {
-        "negations": {"standard": 10, "slash": 10, "strike": 10, "pierce": 35, "magic": 20, "fire": 20, "lightning": 20, "holy": 40}
-    },
-    "Death Rite Bird": {
-        "negations": {"standard": 10, "slash": 10, "strike": -40, "pierce": 35, "magic": 20, "fire": 20, "lightning": 40, "holy": -40}
-    },
-    "Demi-Human Queen": {
-        "negations": {"standard": 0, "slash": -10, "strike": 0, "pierce": 0, "magic": 0, "fire": -20, "lightning": 0, "holy": 0}
-    },
-    "Draconic Tree Sentinel": {
-        "negations": {"standard": 10, "slash": 35, "strike": 10, "pierce": 10, "magic": 20, "fire": 40, "lightning": 40, "holy": 20}
-    },
-    "Elder Lion": {
-        "negations": {"standard": 0, "slash": -10, "strike": 0, "pierce": 0, "magic": 0, "fire": -20, "lightning": 0, "holy": 0}
-    },
-    "Erdtree Avatar": {
-        "negations": {"standard": 10, "slash": 10, "strike": 0, "pierce": 10, "magic": 20, "fire": -40, "lightning": 20, "holy": 40}
-    },
-    "Flying Dragon": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 10, "magic": 40, "fire": 40, "lightning": 40, "holy": 40}
-    },
-    "Flying Dragon of the Hills": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 10, "magic": 40, "fire": 40, "lightning": 40, "holy": 40}
-    },
-    "Golden Hippopotamus": {
-        "negations": {"standard": 0, "slash": -10, "strike": 0, "pierce": 0, "magic": 0, "fire": -20, "lightning": -20, "holy": 0}
-    },
-    "Leonine Misbegotten": {
-        "negations": {"standard": 10, "slash": 0, "strike": 10, "pierce": 10, "magic": 20, "fire": 0, "lightning": 20, "holy": 20}
-    },
-    "Miranda Blossom": {
-        "negations": {"standard": -10, "slash": -40, "strike": 10, "pierce": -10, "magic": -20, "fire": -40, "lightning": 20, "holy": 20}
-    },
-    "Night's Cavalry": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 10, "magic": 40, "fire": 40, "lightning": 20, "holy": 40}
-    },
-    "Red Wolf of the King Consort": {
-        "negations": {"standard": 0, "slash": -10, "strike": 0, "pierce": 0, "magic": 40, "fire": 20, "lightning": 20, "holy": 20}
-    },
-    "Royal Carian Knight": {
-        "negations": {"standard": 10, "slash": 10, "strike": 10, "pierce": 10, "magic": 40, "fire": 40, "lightning": 0, "holy": 20}
-    },
-    "Royal Revenant": {
-        "negations": {"standard": 0, "slash": -10, "strike": 0, "pierce": 0, "magic": 0, "fire": 0, "lightning": 0, "holy": 40}
-    },
-    "Tree Sentinel": {
-        "negations": {"standard": 10, "slash": 35, "strike": 10, "pierce": 10, "magic": 20, "fire": 40, "lightning": 0, "holy": 40}
-    },
-    "Ulcerated Tree Spirit": {
-        "negations": {"standard": 0, "slash": 0, "strike": 0, "pierce": 0, "magic": 20, "fire": -20, "lightning": 20, "holy": 40}
-    },
-    # Evergaol Bosses
-    "Ancient Dragon": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 10, "magic": 40, "fire": 40, "lightning": 80, "holy": 40}
-    },
-    "Banished Knights": {
-        "negations": {"standard": 10, "slash": 35, "strike": 10, "pierce": 0, "magic": 20, "fire": 20, "lightning": -20, "holy": 20}
-    },
-    "Beastmen of Farum Azula": {
-        "negations": {"standard": 0, "slash": 0, "strike": -10, "pierce": 0, "magic": 0, "fire": -20, "lightning": 20, "holy": 0}
-    },
-    "Bloodhound Knight": {
-        "negations": {"standard": 10, "slash": 10, "strike": 10, "pierce": 0, "magic": 0, "fire": 0, "lightning": -20, "holy": 0}
-    },
-    "Crucible Knight": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 40, "fire": 20, "lightning": 20, "holy": 40}
-    },
-    "Crucible Knight Ordovis": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 40, "fire": 20, "lightning": 20, "holy": 40}
-    },
-    "Crucible Knight Siluria": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 40, "fire": 20, "lightning": 20, "holy": 40}
-    },
-    "Crystalians": {
-        "negations": {"standard": 10, "slash": 35, "strike": 10, "pierce": 35, "magic": 40, "fire": 40, "lightning": 40, "holy": 40}
-    },
-    "Dragonkin Soldier": {
-        "negations": {"standard": 10, "slash": 0, "strike": 10, "pierce": 10, "magic": 20, "fire": 20, "lightning": 40, "holy": 20}
-    },
-    "Godskin Apostle": {
-        "negations": {"standard": 0, "slash": -10, "strike": 10, "pierce": 0, "magic": 20, "fire": 40, "lightning": 20, "holy": 40}
-    },
-    "Godskin Noble": {
-        "negations": {"standard": 0, "slash": -10, "strike": 35, "pierce": 0, "magic": 20, "fire": 40, "lightning": 20, "holy": 40}
-    },
-    "Godskin Noble & Apostle": {
-        "negations": {"standard": 0, "slash": -10, "strike": 20, "pierce": 0, "magic": 20, "fire": 40, "lightning": 20, "holy": 40}
-    },
-    "Grave Warden Duelist": {
-        "negations": {"standard": 0, "slash": -10, "strike": 0, "pierce": 0, "magic": 0, "fire": 0, "lightning": 0, "holy": 0}
-    },
-    "Nox Warriors": {
-        "negations": {"standard": 0, "slash": 0, "strike": 0, "pierce": 0, "magic": 0, "fire": 0, "lightning": 0, "holy": 0}
-    },
-    "Omen": {
-        "negations": {"standard": 0, "slash": -10, "strike": 0, "pierce": 0, "magic": 0, "fire": 0, "lightning": 0, "holy": 20}
-    },
-    "Beastly Brigade": {
-        "negations": {"standard": 0, "slash": 0, "strike": -10, "pierce": 0, "magic": 0, "fire": -20, "lightning": 20, "holy": 0}
-    },
-    "Stoneskin Lords": {
-        "negations": {"standard": 10, "slash": 35, "strike": 10, "pierce": 35, "magic": 40, "fire": 40, "lightning": 40, "holy": 40}
-    },
-    # DLC Bosses
-    "Blackgaol Knight": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 25, "fire": 30, "lightning": 25, "holy": 25}
-    },
-    "Valiant Gargoyle": {
-        "negations": {"standard": 10, "slash": 35, "strike": 0, "pierce": 35, "magic": 20, "fire": 40, "lightning": 40, "holy": 40}
-    },
-    "Fallingstar Beast": {
-        "negations": {"standard": 35, "slash": 35, "strike": 35, "pierce": 35, "magic": 20, "fire": 20, "lightning": 20, "holy": 20}
-    },
-    "Black Blade Kindred": {
-        "negations": {"standard": 10, "slash": 35, "strike": 0, "pierce": 35, "magic": 20, "fire": 40, "lightning": 40, "holy": 80}
-    },
-    "Blackblade Kindred": {
-        "negations": {"standard": 10, "slash": 35, "strike": 0, "pierce": 35, "magic": 20, "fire": 40, "lightning": 40, "holy": 80}
-    },
-    "Nameless King": {
-        "negations": {"standard": 20, "slash": 21, "strike": 18, "pierce": 2, "magic": 10, "fire": 35, "lightning": -31, "holy": 0}
-    },
-}
+# Load boss data from JSON file
+_BOSSES_JSON_PATH = Path(__file__).parent.parent.parent / "data" / "bosses.json"
 
-# Common OCR misreadings to correct
-OCR_CORRECTIONS = {
-    # Demi-Human Queen variations
-    "Demi-Human Oueen": "Demi-Human Queen",
-    "Demi Human Queen": "Demi-Human Queen",
-    "DemiHuman Queen": "Demi-Human Queen",
-    "Demi-Human Gueen": "Demi-Human Queen",
-    # Tree Sentinel variations
-    "Tree Sent1nel": "Tree Sentinel",
-    "Tree Sentine1": "Tree Sentinel",
-    # Night's Cavalry variations
-    "N1ght's Cavalry": "Night's Cavalry",
-    "Night's Cava1ry": "Night's Cavalry",
-    "Nights Cavalry": "Night's Cavalry",
-    # Flying Dragon variations
-    "F1ying Dragon": "Flying Dragon",
-    "Flying Oragon": "Flying Dragon",
-    # Erdtree Avatar variations
-    "Erdtree Avater": "Erdtree Avatar",
-    # Death Rite Bird variations
-    "Death R1te Bird": "Death Rite Bird",
-    "Death Rite 8ird": "Death Rite Bird",
-    # Leonine Misbegotten variations
-    "Leon1ne Misbegotten": "Leonine Misbegotten",
-    "Leonine Misbegoten": "Leonine Misbegotten",
-    # Miranda Blossom variations
-    "M1randa Blossom": "Miranda Blossom",
-    # Royal variations
-    "Roya1 Revenant": "Royal Revenant",
-    "Royal Carian Kn1ght": "Royal Carian Knight",
-    "Roya1 Carian Knight": "Royal Carian Knight",
-    # Bell Bearing Hunter
-    "Be11 Bearing Hunter": "Bell Bearing Hunter",
-    "Bell 8earing Hunter": "Bell Bearing Hunter",
-    # Ulcerated Tree Spirit
-    "U1cerated Tree Spirit": "Ulcerated Tree Spirit",
-    "Ulcerated Tree Sp1rit": "Ulcerated Tree Spirit",
-    # Golden Hippopotamus
-    "Golden Hippopotarnus": "Golden Hippopotamus",
-    "Go1den Hippopotamus": "Golden Hippopotamus",
-    # Elder Lion
-    "E1der Lion": "Elder Lion",
-    "Elder L1on": "Elder Lion",
-    # Ancient Hero of Zamor
-    "Anc1ent Hero of Zamor": "Ancient Hero of Zamor",
-    "Ancient Hero of Zamor": "Ancient Hero of Zamor",
-    # Black Knife Assassin
-    "B1ack Knife Assassin": "Black Knife Assassin",
-    "Black Kn1fe Assassin": "Black Knife Assassin",
-    # Draconic Tree Sentinel
-    "Dracon1c Tree Sentinel": "Draconic Tree Sentinel",
-    "Draconic Tree Sent1nel": "Draconic Tree Sentinel",
-    # Red Wolf
-    "Red Wo1f of the King Consort": "Red Wolf of the King Consort",
-    "Red Wolf of the K1ng Consort": "Red Wolf of the King Consort",
-    # Ancestor Spirit
-    "Ancestor Sp1rit": "Ancestor Spirit",
-    # Evergaol Bosses
-    "Anc1ent Dragon": "Ancient Dragon",
-    "Ancient Oragon": "Ancient Dragon",
-    "Ban1shed Knights": "Banished Knights",
-    "Banished Kn1ghts": "Banished Knights",
-    "Beastmen of Farum Azu1a": "Beastmen of Farum Azula",
-    "Beastmen of Farurn Azula": "Beastmen of Farum Azula",
-    "B1oodhound Knight": "Bloodhound Knight",
-    "Bloodhound Kn1ght": "Bloodhound Knight",
-    "Cruc1ble Knight": "Crucible Knight",
-    "Crucible Kn1ght": "Crucible Knight",
-    "Crysta1ians": "Crystalians",
-    "Crystal1ans": "Crystalians",
-    "Dragon1in Soldier": "Dragonkin Soldier",
-    "Dragonkin So1dier": "Dragonkin Soldier",
-    "Dragonk1n Soldier": "Dragonkin Soldier",
-    "Godskin Apost1e": "Godskin Apostle",
-    "Godsk1n Apostle": "Godskin Apostle",
-    "Godskin Nob1e": "Godskin Noble",
-    "Godsk1n Noble": "Godskin Noble",
-    "Godskin Noble & Apost1e": "Godskin Noble & Apostle",
-    "Godsk1n Noble & Apostle": "Godskin Noble & Apostle",
-    "Grave Warden Due1ist": "Grave Warden Duelist",
-    "Grave Warden Duel1st": "Grave Warden Duelist",
-    "Nox Warr1ors": "Nox Warriors",
-    "Ornon": "Omen",
-    "0men": "Omen",
-    "Beast1y Brigade": "Beastly Brigade",
-    "Beastly Br1gade": "Beastly Brigade",
-    "Stoneskin Lords": "Stoneskin Lords",
-    "Stonesk1n Lords": "Stoneskin Lords",
-    # DLC Bosses
-    "B1ackgaol Knight": "Blackgaol Knight",
-    "Blackgaol Kn1ght": "Blackgaol Knight",
-    "Blackgao1 Knight": "Blackgaol Knight",
-    "Va1iant Gargoyle": "Valiant Gargoyle",
-    "Valiant Gargoy1e": "Valiant Gargoyle",
-    "Valiant Gargoyle": "Valiant Gargoyle",
-    "Fa1lingstar Beast": "Fallingstar Beast",
-    "Fallingstar 8east": "Fallingstar Beast",
-    "Fall1ngstar Beast": "Fallingstar Beast",
-    "Black B1ade Kindred": "Black Blade Kindred",
-    "Black Blade K1ndred": "Black Blade Kindred",
-    "Blackb1ade Kindred": "Blackblade Kindred",
-    "Blackblade K1ndred": "Blackblade Kindred",
-    "Name1ess King": "Nameless King",
-    "Nameless K1ng": "Nameless King",
-}
+
+def _load_boss_data():
+    """Load boss data from bosses.json file."""
+    try:
+        with open(_BOSSES_JSON_PATH, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.error(f"Boss data file not found: {_BOSSES_JSON_PATH}")
+        return {"nightlords": {}, "field_bosses": {}}
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in boss data file: {e}")
+        return {"nightlords": {}, "field_bosses": {}}
+
+
+def _build_field_boss_data(bosses_json: dict) -> dict:
+    """Build FIELD_BOSS_DATA dict from bosses.json structure."""
+    field_boss_data = {}
+    for boss_key, boss_info in bosses_json.get("field_bosses", {}).items():
+        field_boss_data[boss_key] = {"negations": boss_info["negations"]}
+        # Also add alternate names as keys pointing to the same data
+        for alt_name in boss_info.get("names", []):
+            if alt_name != boss_key:
+                field_boss_data[alt_name] = {"negations": boss_info["negations"]}
+    return field_boss_data
+
+
+def _build_ocr_corrections(bosses_json: dict) -> dict:
+    """Build OCR_CORRECTIONS dict from bosses.json structure."""
+    corrections = {}
+    for boss_key, boss_info in bosses_json.get("field_bosses", {}).items():
+        canonical_name = boss_info.get("names", [boss_key])[0] if boss_info.get("names") else boss_key
+        for ocr_spelling in boss_info.get("ocr_spellings", []):
+            corrections[ocr_spelling] = canonical_name
+    return corrections
+
+
+# Load and build the data structures
+_BOSSES_JSON = _load_boss_data()
+FIELD_BOSS_DATA = _build_field_boss_data(_BOSSES_JSON)
+OCR_CORRECTIONS = _build_ocr_corrections(_BOSSES_JSON)
+
+
+def get_all_boss_data() -> dict:
+    """Get the complete boss data from bosses.json."""
+    return _BOSSES_JSON
+
+
+def reload_boss_data():
+    """Reload boss data from disk (useful for development)."""
+    global _BOSSES_JSON, FIELD_BOSS_DATA, OCR_CORRECTIONS
+    _BOSSES_JSON = _load_boss_data()
+    FIELD_BOSS_DATA = _build_field_boss_data(_BOSSES_JSON)
+    OCR_CORRECTIONS = _build_ocr_corrections(_BOSSES_JSON)
 
 
 class FieldBossDetector:
