@@ -2521,6 +2521,48 @@
         "madness": "immune"
       }
     },
+    "Smelter Demon": {
+      "type": "field_boss",
+      "names": [
+        "Smelter Demon"
+      ],
+      "ocr_spellings": [
+        "Sme1ter Demon",
+        "Smelter Dem0n"
+      ],
+      "negations": {
+        "standard": -10,
+        "slash": 6,
+        "strike": -10,
+        "pierce": 8,
+        "magic": 30,
+        "fire": 80,
+        "lightning": 30,
+        "holy": 30
+      },
+      "status_resistances": {
+        "poison": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "scarlet_rot": [
+          154,
+          252,
+          542,
+          999
+        ],
+        "blood_loss": "immune",
+        "frostbite": [
+          252,
+          542,
+          999
+        ],
+        "sleep": "immune",
+        "madness": "immune"
+      }
+    },
     "Abductor Virgin": {
       "type": "field_boss",
       "names": [
